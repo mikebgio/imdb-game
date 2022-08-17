@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
+import urllib.parse
 from pprint import pprint
-import re
+
 import requests
 from bs4 import BeautifulSoup
-import urllib.parse
 
 IMDB_ROOT = 'https://www.imdb.com'
+
 
 def clean_whitespace(text):
     warning_whitespace = ' ' * 24
@@ -42,6 +43,7 @@ def create_warnings_object(soup):
                 categories[key]['warnings'].append(entry)
     return categories
 
+
 def search_imdb(search_term: str):
     results = []
     result_item_name = 'findResult'
@@ -51,6 +53,7 @@ def search_imdb(search_term: str):
     for tag in soup.find_all(class_=result_item_name):
         results.append(tag.a['href'])
     return results
+
 
 def get_title(url):
     soup = load_webpage(url)
