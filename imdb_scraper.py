@@ -3,20 +3,17 @@ from pprint import pprint
 import re
 import requests
 from bs4 import BeautifulSoup
+import urllib.parse
 
-# TODO: this could be the parser of HTML pages that a crawler script is downloading
-#   the crawler script should smartly seek out existing /parentalguide pages
-#   it should verify the page exists and download it to a staging folder
-#   this script would parse static downloaded .html files and then ship data to DB
-#   Perhaps the interface can be javascript
+IMDB_ROOT = 'https://www.imdb.com'
 
 def clean_whitespace(text):
     warning_whitespace = ' ' * 24
     return text.replace('\n', '').replace(warning_whitespace, '').strip()
 
 
-def get_imdb_page(movie):
-    r = requests.get(movie)
+def load_webpage(url):
+    r = requests.get(url)
     return BeautifulSoup(r.text, "html.parser")
 
 
@@ -45,12 +42,31 @@ def create_warnings_object(soup):
                 categories[key]['warnings'].append(entry)
     return categories
 
+def search_imdb(search_term: str):
+    results = []
+    result_item_name = 'findResult'
+    query = urllib.parse.quote(search_term)
+    url = f'{IMDB_ROOT}/find?s=tt&q={query}'
+    soup = load_webpage(url)
+    for tag in soup.find_all(class_=result_item_name):
+        results.append(tag.a['href'])
+    return results
+
+def get_title(url):
+    soup = load_webpage(url)
+    return soup.h1.text
 
 
 if __name__ == '__main__':
-    movie = 'https://www.imdb.com/title/tt0158983/parentalguide'
-    # soup = get_imdb_page(movie)
-    southpark = create_warnings_object(get_imdb_page(movie))
-    pprint(southpark)
+    results = search_imdb('south park bigger longer and uncut')
+    movie = f'{IMDB_ROOT}/{results[0]}parentalguide'
+    print(movie)
+    warnings = create_warnings_object(load_webpage(movie))
+    pprint(warnings)
     print('done.')
 
+# TODO: this could be the parser of HTML pages that a crawler script is downloading
+#   the crawler script should smartly seek out existing /parentalguide pages
+#   it should verify the page exists and download it to a staging folder
+#   this script would parse static downloaded .html files and then ship data to DB
+#   Perhaps the interface can be javascript
