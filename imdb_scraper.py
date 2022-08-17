@@ -64,9 +64,3 @@ if __name__ == '__main__':
     warnings = create_warnings_object(load_webpage(movie))
     pprint(warnings)
     print('done.')
-
-# TODO: this could be the parser of HTML pages that a crawler script is downloading
-#   the crawler script should smartly seek out existing /parentalguide pages
-#   it should verify the page exists and download it to a staging folder
-#   this script would parse static downloaded .html files and then ship data to DB
-#   Perhaps the interface can be javascript
