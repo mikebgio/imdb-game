@@ -88,9 +88,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # results = search_imdb('south park bigger longer and uncut')
-    # movie = f'{IMDB_ROOT}/{results[0]}parentalguide'
-    # print(movie)
-    # warnings = create_warnings_object(load_webpage(movie))
-    # pprint(warnings)
     print('done.')
