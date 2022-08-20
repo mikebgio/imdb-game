@@ -4,6 +4,7 @@ import urllib.parse
 import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
+from replit import db
 
 IMDB_ROOT = 'https://www.imdb.com'
 
@@ -29,7 +30,7 @@ def create_warnings_object(soup, movie_meta: dict):
                             'frightening': {
                                 'full_name': 'Frightening & Intense Scenes',
                                 'warnings': []
-                                }, }}
+                            }, }}
     movie = movie_meta | movie
     list_item = 'ipl-zebra-list__item'
     pfx = 'advisory-'
@@ -69,8 +70,10 @@ def get_top_movie_links():
     soup = load_webpage('https://www.imdb.com/chart/top/')
     movies = []
     for tag in soup.find_all(class_='titleColumn'):
-        movies.append({'title': tag.a.text, 'link': tag.a['href'],
-                       'year': int(tag.span.text.replace('(', '').replace(')', ''))})
+        movies.append(
+            {'imdb_id': tag.a['href'].split('/')[-2], 'title': tag.a.text,
+             'link': tag.a['href'],
+             'year': int(tag.span.text.replace('(', '').replace(')', ''))})
     return movies
 
 
