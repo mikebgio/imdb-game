@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import urllib.parse
+import os
 
 import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
-from replit import db
 
 IMDB_ROOT = 'https://www.imdb.com'
 
@@ -44,7 +44,7 @@ def create_warnings_object(soup, movie_meta: dict):
                 if 'spoiler' in key:
                     spoiler = True
                     key = key.replace('spoiler-', '')
-                entry = {'text': text, 'spoiler': spoiler}
+                entry = {'text': text, 'spoiler': spoiler, 'points': 0}
                 movie['categories'][key]['warnings'].append(entry)
     return movie
 
@@ -78,8 +78,7 @@ def get_top_movie_links():
 
 
 def main():
-    # TODO: Parameterize for prod
-    client = MongoClient('mongodb://localhost:27017')
+    client = MongoClient(os.getenv('MONGO_URL'))
     db = client['imdb']
     movie_db = db['movies']
     movies = get_top_movie_links()
