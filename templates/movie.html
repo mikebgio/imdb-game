@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section id="game-status">
+    <h1 id="game-round">Round {{ game_round_num }}</h1>
+</section>
+<hr class="rounded">
+<section id="movie-window">
+    <section id="category-header">
+        <h2 id="current-category">{{ current_category }}</h2>
+    </section>
+    <section id="clue">
+        <h3>{{ current_clue }}</h3>
+    </section>
+</section>
+<hr class="rounded">
+<section id="player-guess-space">
+    <form action="/guess.html">
+        <label for="guess">Your Guess:</label><br>
+        <input type="text" id="guess" name="guess" placeholder="Enter movie title here..."><br><br>
+        <input type="submit" value="Submit">
+    </form>
+</section>
+{% endblock %}
