@@ -1,0 +1,88 @@
+body {
+    font-family: sans-serif;
+    background-color: #d7d4cd;
+    text-align: center;
+}
+
+header {
+    text-align: center;
+    padding: 25px;
+    background-color: gold;
+    border: 4px solid black;
+    border-radius: 3px;
+    width: 75%;
+    margin: auto;
+}
+
+h1 {
+    color: black;
+    text-align: center;
+
+}
+
+main {
+    text-align: center;
+    margin: auto;
+    width: 75%;
+}
+
+#host {
+    text-align: center;
+
+}
+
+.button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+#game-options {
+    margin: 20px auto;
+
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+#select-movie-year {
+    text-align: center;
+    margin: 55px auto;
+    width: 50%;
+}
+
+#select-movie-year ul {
+    list-style-type: none;
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margins */
+}
+
+#select-movie-year li {
+    float: left;
+    margin: 0 15px;
+    padding: 4px 26px;
+    background-color: black;
+    color: yellow;
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+#select-movie-year li:hover {
+    background-color: yellow;
+    color: black;
+}
+
+/* Rounded border */
+hr.rounded {
+  border-top: 8px solid #bbb;
+  border-radius: 5px;
+}
