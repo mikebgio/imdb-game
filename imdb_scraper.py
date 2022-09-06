@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import urllib.parse
 import os
-
+import hashlib
 import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
@@ -21,21 +21,20 @@ def load_webpage(url):
 
 def create_warnings_object(soup, movie_meta: dict):
     # TODO: Make a version that utilizes Replit.DB
-    movie = {'categories': {'nudity': {'full_name': 'Sex & Nudity', 'warnings':
-        []}, 'violence': {'full_name': 'Violence & Gore', 'warnings': []},
-                            'profanity': {'full_name': 'Profanity',
-                                          'warnings': []},
-                            'alcohol': {'full_name': 'Alcohol, Drugs & Smoking',
-                                        'warnings': []},
-                            'frightening': {
-                                'full_name': 'Frightening & Intense Scenes',
-                                'warnings': []
-                            }, }}
+    categories = {'nudity': 'Sex & Nudity',
+                  'violence': 'Violence & Gore',
+                  'profanity': 'Profanity',
+                  'alcohol': 'Alcohol, Drugs & Smoking',
+                  'frightening': 'Frightening & Intense Scenes',
+                  }
+    movie = {
+        'clues': []
+    }
     movie = movie_meta | movie
     list_item = 'ipl-zebra-list__item'
     pfx = 'advisory-'
     for warning in soup.find_all(class_=list_item):
-        text = clean_whitespace(warning.contents[0])
+        text: str = clean_whitespace(warning.contents[0])
         if 'id' in warning.parent.parent.attrs:
             if warning.parent.parent.attrs['id'].lower() != 'certificates':
                 tag = warning.parent.parent.attrs['id']
@@ -44,8 +43,10 @@ def create_warnings_object(soup, movie_meta: dict):
                 if 'spoiler' in key:
                     spoiler = True
                     key = key.replace('spoiler-', '')
-                entry = {'text': text, 'spoiler': spoiler, 'points': 0}
-                movie['categories'][key]['warnings'].append(entry)
+                entry = {'text': text, 'spoiler': spoiler, 'points': 0,
+                         'id': hashlib.md5(text.encode()).hexdigest(),
+                         'category': categories[key]}
+                movie['clues'].append(entry)
     return movie
 
 
@@ -89,5 +90,6 @@ def main():
 
 
 if __name__ == '__main__':
+    print('Let\'s get data!')
     main()
     print('done.')
