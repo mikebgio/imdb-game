@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section id="host">
+    <h2>With your host, {{ name }}!</h2>
+    <img src="/static/img.png" style="width:100px;height:100px;">
+</section>
+<section id="game-options">
+    <a class="button" id="start-game" href="/game">START</a>
+</section>
+{% endblock %}

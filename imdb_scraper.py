@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import urllib.parse
-from pprint import pprint
-
+import os
+import hashlib
 import requests
 from bs4 import BeautifulSoup
+from pymongo import MongoClient
 
 IMDB_ROOT = 'https://www.imdb.com'
 
@@ -18,19 +19,22 @@ def load_webpage(url):
     return BeautifulSoup(r.text, "html.parser")
 
 
-def create_warnings_object(soup):
-    categories = {
-        'nudity': {'full_name': 'Sex & Nudity', 'warnings': []},
-        'violence': {'full_name': 'Violence & Gore', 'warnings': []},
-        'profanity': {'full_name': 'Profanity', 'warnings': []},
-        'alcohol': {'full_name': 'Alcohol, Drugs & Smoking', 'warnings': []},
-        'frightening': {'full_name': 'Frightening & Intense Scenes',
-                        'warnings': []},
+def create_warnings_object(soup, movie_meta: dict):
+    # TODO: Make a version that utilizes Replit.DB
+    categories = {'nudity': 'Sex & Nudity',
+                  'violence': 'Violence & Gore',
+                  'profanity': 'Profanity',
+                  'alcohol': 'Alcohol, Drugs & Smoking',
+                  'frightening': 'Frightening & Intense Scenes',
+                  }
+    movie = {
+        'clues': []
     }
+    movie = movie_meta | movie
     list_item = 'ipl-zebra-list__item'
     pfx = 'advisory-'
     for warning in soup.find_all(class_=list_item):
-        text = clean_whitespace(warning.contents[0])
+        text: str = clean_whitespace(warning.contents[0])
         if 'id' in warning.parent.parent.attrs:
             if warning.parent.parent.attrs['id'].lower() != 'certificates':
                 tag = warning.parent.parent.attrs['id']
@@ -39,9 +43,11 @@ def create_warnings_object(soup):
                 if 'spoiler' in key:
                     spoiler = True
                     key = key.replace('spoiler-', '')
-                entry = {'text': text, 'spoiler': spoiler}
-                categories[key]['warnings'].append(entry)
-    return categories
+                entry = {'text': text, 'spoiler': spoiler, 'points': 0,
+                         'id': hashlib.md5(text.encode()).hexdigest(),
+                         'category': categories[key]}
+                movie['clues'].append(entry)
+    return movie
 
 
 def search_imdb(search_term: str):
@@ -60,10 +66,30 @@ def get_title(url):
     return soup.h1.text
 
 
+def get_top_movie_links():
+    print('Loading the top 250 Movies to MongoDB...')
+    soup = load_webpage('https://www.imdb.com/chart/top/')
+    movies = []
+    for tag in soup.find_all(class_='titleColumn'):
+        movies.append(
+            {'imdb_id': tag.a['href'].split('/')[-2], 'title': tag.a.text,
+             'link': tag.a['href'],
+             'year': int(tag.span.text.replace('(', '').replace(')', ''))})
+    return movies
+
+
+def main():
+    client = MongoClient(os.getenv('MONGO_URL'))
+    db = client['imdb']
+    movie_db = db['movies']
+    movies = get_top_movie_links()
+    for movie in movies:
+        movie_doc = create_warnings_object(
+            load_webpage(f'{IMDB_ROOT}{movie["link"]}parentalguide'), movie)
+        movie_db.insert_one(movie_doc)
+
+
 if __name__ == '__main__':
-    results = search_imdb('south park bigger longer and uncut')
-    movie = f'{IMDB_ROOT}/{results[0]}parentalguide'
-    print(movie)
-    warnings = create_warnings_object(load_webpage(movie))
-    pprint(warnings)
+    print('Let\'s get data!')
+    main()
     print('done.')
