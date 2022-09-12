@@ -48,15 +48,15 @@ class GameHost:
         :return:
         """
         filter = {'_id': ObjectId(doc_id)}
-        result = self.movie_db.find_one(filter)
+        movie = self.movie_db.find_one(filter)
         self.game_db.update_one(self.game_inst_query, {
-            '$push': {'movie': result['_id']}
+            '$push': {'movie': movie['_id']}
         })
-        self.played_movies.append(result['_id'])
+        self.played_movies.append(movie['_id'])
         current_round = len(self.rounds) + 1
         self.rounds.append(
-            {'round': current_round, 'movie_id': result['_id']})
-        return result
+            {'round': current_round, 'movie_id': movie['_id']})
+        return movie
 
     def get_clues_from_movie(self, movie):
         """
@@ -95,7 +95,8 @@ if __name__ == '__main__':
     ignored_words = ['the', 'a']
     print(f"****ANSWER: '{movie['title']}'  *****")
     for idx, clue in enumerate(host.rounds[0]['clues']):
-        print(f'This warning is in the {clue["category"]} category')
+        print(f'This warning is in the {clue["category"]} category:\n')
+        print(f'For {clue["points"]} points...\n')
         print(clue['text'])
         true_answer = ''.join(e for e in movie['title'].lower() if e.isalnum())
         player_answer = ''.join(
