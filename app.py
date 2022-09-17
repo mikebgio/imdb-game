@@ -34,7 +34,6 @@ def select_movie(movie_id):
                            current_clue=current_clue['text'])
 
 
-def select_clue_from_movie(movie):
 
 
 if __name__ == "__main__":
