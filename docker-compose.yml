@@ -1,0 +1,16 @@
+version: "1.0"
+services:
+  mongo:
+    image: "mongo:6.0.1"
+    container_name: "imdb-game-mongodb"
+    volumes:
+      - "~/servers/mongodb/data:/data/db"
+    ports:
+      - "27017:27017"
+  web:
+    build: .
+    container_name: "imdb-game"
+    ports:
+      - "8080:5000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
