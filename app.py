@@ -35,6 +35,9 @@ def select_movie(movie_id):
 
 
 
-
+# Todo:
+#   - add clues route/page with text box for player input and submit button
+#   - add functionality for win/loss of each round
+#   - add functionality for playing a five round game that reveals a final score
 if __name__ == "__main__":
     app.run(debug=True)

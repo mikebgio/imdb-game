@@ -88,7 +88,8 @@ def main():
             load_webpage(f'{IMDB_ROOT}{movie["link"]}parentalguide'), movie)
         movie_db.insert_one(movie_doc)
 
-
+# Todo:
+#     - add function to index cover art when scraping
 if __name__ == '__main__':
     print('Let\'s get data!')
     main()
