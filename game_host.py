@@ -52,7 +52,8 @@ class GameHost:
             {'$match': {'_id': {'$nin': self.played_movies}}},
             {'$sample': {'size': 3}}
         ]
-        results = [choice for choice in self.mongo.movies.aggregate(query_pipeline)]
+        results = [choice for choice in
+                   self.mongo.movies.aggregate(query_pipeline)]
         self.mongo.games.update_one(self.game_inst_query, {
             '$push': {'rounds': [{'round': 1, 'choices': results}]}})
         return results
@@ -139,7 +140,7 @@ class DB:
         self.current_game = None
         self.current_movie = None
 
-    def create_player(self, player_id):
+    def create_player(self, player_id: str):
         player = {
             'player_id': player_id,
             'date_created': datetime.utcnow().isoformat(),
@@ -167,9 +168,9 @@ class DB:
             print(f'Something is wrong\ndocs: {docs}')
             sys.exit(100)
 
-    def create_game(self, game_id: str, ):
+    def create_game(self, player_id: str, game_id: str, ):
         """
-        creates new game object in
+
         :param game_id:
         :param player_id:
         :return:
@@ -183,10 +184,10 @@ class DB:
         self.games.insert_one(game)
         return game
 
-    def get_game(self, player_id):
+    def get_game(self, player_id: str, game_id: str):
         pass
 
-    def write_guess_to_game(self, guess):
+    def write_guess_to_game(self, guess: str):
         pass
 
     def get_previous_movies(self):

@@ -1,17 +1,19 @@
 import os
 import random
 from flask import Flask, render_template, request
-import game_host
+from game_host import GameHost
 import uuid
 
 from pprint import pprint
 
 app = Flask(__name__, template_folder="templates")
-host = game_host.GameHost(os.getenv('MONGO_URL'))
+host = None
 
 
 @app.route('/')
 def home():
+    global host
+    host = GameHost(os.getenv('MONGO_URL'))
     return render_template('home.html', name='Nick Martucci')
 
 
@@ -29,7 +31,6 @@ def game():
 @app.route('/movie/<movie_id>')
 def select_movie(movie_id):
     movie = host.get_movie(movie_id)
-
     return render_template('movie.html', current_category=cat_title,
                            current_clue=current_clue['text'])
 
