@@ -1,16 +1,21 @@
-version: "1.0"
+version: "3.8"
+# For local running of the application
+volumes:
+  mongo:
+    name: mongo
+
 services:
   mongo:
-    image: "mongo:6.0.1"
+    image: "mongo:6.0.2"
     container_name: "imdb-game-mongodb"
     volumes:
-      - "~/servers/mongodb/data:/data/db"
+      - mongo:/data/db
     ports:
       - "27017:27017"
   web:
     build: .
-    container_name: "imdb-game"
+    container_name: "imdb-game-webserver"
     ports:
-      - "8080:5000"
+      - "80:5000"
     environment:
       - MONGO_URL=mongodb://mongo:27017
