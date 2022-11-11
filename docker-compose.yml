@@ -6,7 +6,7 @@ volumes:
 
 services:
   mongo:
-    image: "mongo:6.0.2"
+    build: db/
     container_name: "imdb-game-mongodb"
     volumes:
       - mongo:/data/db
