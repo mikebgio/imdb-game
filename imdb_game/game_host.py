@@ -1,3 +1,6 @@
+"""
+GameHost class
+"""
 import os
 import sys
 import uuid

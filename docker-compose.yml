@@ -7,14 +7,14 @@ volumes:
 services:
   mongo:
     build: db/
-    container_name: "imdb-game-mongodb"
+    container_name: "imdb_game-mongodb"
     volumes:
       - mongo:/data/db
     ports:
       - "27017:27017"
   web:
     build: .
-    container_name: "imdb-game-webserver"
+    container_name: "imdb_game-webserver"
     ports:
       - "80:5000"
     environment:

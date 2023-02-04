@@ -1,10 +1,6 @@
 import os
-import random
-from flask import Flask, render_template, request
-from game_host import GameHost
-import uuid
-
-from pprint import pprint
+from flask import Flask, render_template
+from imdb_game.game_host import GameHost
 
 app = Flask(__name__, template_folder="templates")
 host = None

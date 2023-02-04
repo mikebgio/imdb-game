@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+"""
+Functions for scraping imdb.com for movie clues
+"""
 import urllib.parse
 import os
 import hashlib
