@@ -6,7 +6,6 @@ import os
 import hashlib
 import requests
 from bs4 import BeautifulSoup
-from pymongo import MongoClient
 from database import DBHandler
 
 IMDB_ROOT = 'https://www.imdb.com'
