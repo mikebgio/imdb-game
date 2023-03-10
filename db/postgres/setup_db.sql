@@ -1,4 +1,20 @@
-DROP TABLE IF EXISTS players;
+DROP TABLE IF EXISTS categories CASCADE;
+CREATE TABLE categories
+(
+    category_id  SERIAL PRIMARY KEY,
+    short_name   VARCHAR(12) NOT NULL,
+    display_name VARCHAR(32) NOT NULL
+);
+
+INSERT INTO categories(short_name, display_name)
+VALUES ('nudity', 'Sex & Nudity'),
+       ('violence', 'Violence & Gore'),
+       ('profanity', 'Profanity'),
+       ('alcohol', 'Alcohol, Drugs & Smoking'),
+       ('frightening', 'Frightening & Intense Scenes');
+
+
+DROP TABLE IF EXISTS players CASCADE;
 CREATE TABLE players
 (
     player_id    UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -8,27 +24,29 @@ CREATE TABLE players
     last_played  TIMESTAMP DEFAULT NOW()
 );
 
-DROP TABLE IF EXISTS movies;
+DROP TABLE IF EXISTS movies CASCADE;
 CREATE TABLE movies
 (
     movie_id    UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
     movie_title VARCHAR(255) NOT NULL,
     year        INTEGER      NOT NULL,
+    category INT REFERENCES categories (category_id),
     date_added  TIMESTAMP DEFAULT NOW()
 );
 
 
-DROP TABLE IF EXISTS games;
+DROP TABLE IF EXISTS games CASCADE;
 CREATE TABLE games
 (
-    game_id    UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    game_id    UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
     player_id  UUID REFERENCES players (player_id),
-    score      INTEGER   NOT NULL,
-    start_time TIMESTAMP NOT NULL,
-    end_time   TIMESTAMP NOT NULL
+    score      INTEGER   DEFAULT 0     NOT NULL,
+    round      INTEGER   DEFAULT 0     NOT NULL,
+    start_time TIMESTAMP DEFAULT NOW() NOT NULL,
+    end_time   TIMESTAMP               NOT NULL
 );
 
-DROP TABLE IF EXISTS guesses;
+DROP TABLE IF EXISTS guesses CASCADE;
 CREATE TABLE guesses
 (
     guess_id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -40,7 +58,7 @@ CREATE TABLE guesses
     is_correct       BOOLEAN   NOT NULL
 );
 
-DROP TABLE IF EXISTS scores;
+DROP TABLE IF EXISTS scores CASCADE;
 CREATE TABLE scores
 (
     score_id   UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -49,16 +67,7 @@ CREATE TABLE scores
     score_time TIMESTAMP NOT NULL
 );
 
-
-DROP TABLE IF EXISTS categories;
-CREATE TABLE categories
-(
-    category_id  SERIAL PRIMARY KEY,
-    short_name   VARCHAR(12) NOT NULL,
-    display_name VARCHAR(32) NOT NULL
-);
-
-DROP TABLE IF EXISTS clues;
+DROP TABLE IF EXISTS clues CASCADE;
 CREATE TABLE clues
 (
     clue_id      UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -67,11 +76,4 @@ CREATE TABLE clues
     clue_text    TEXT NOT NULL,
     date_created TIMESTAMP DEFAULT NOW()
 );
-
-INSERT INTO categories(short_name, display_name)
-VALUES ('nudity', 'Sex & Nudity'),
-       ('violence', 'Violence & Gore'),
-       ('profanity', 'Profanity'),
-       ('alcohol', 'Alcohol, Drugs & Smoking'),
-       ('frightening', 'Frightening & Intense Scenes');
 
