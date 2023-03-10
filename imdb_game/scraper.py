@@ -7,6 +7,7 @@ import hashlib
 import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
+from database import DBHandler
 
 IMDB_ROOT = 'https://www.imdb.com'
 
@@ -81,14 +82,14 @@ def get_top_movie_links():
 
 
 def main():
-    client = MongoClient(os.getenv('MONGO_URL'))
-    db = client['imdb']
-    movie_db = db['movies']
+    db = DBHandler()
     movies = get_top_movie_links()
     for movie in movies:
         movie_doc = create_warnings_object(
             load_webpage(f'{IMDB_ROOT}{movie["link"]}parentalguide'), movie)
-        movie_db.insert_one(movie_doc)
+        movie_id = db.add_movie(movie_doc['title'], movie_doc['year'], movie_doc['imdb_id'])
+        # for clue in movies['clues']:
+        #     db.add_clue(movie_id, movie_doc['category_id'], clue['clue_text'])
 
 # Todo:
 #     - add function to index cover art when scraping
