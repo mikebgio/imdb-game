@@ -8,7 +8,7 @@ CREATE TABLE categories
 
 INSERT INTO categories(short_name, display_name)
 VALUES ('nudity', 'Sex & Nudity'),
-       ('violence', 'Violence & Gore'),
+       ('violence', 'Violencfe & Gore'),
        ('profanity', 'Profanity'),
        ('alcohol', 'Alcohol, Drugs & Smoking'),
        ('frightening', 'Frightening & Intense Scenes');
@@ -17,22 +17,24 @@ VALUES ('nudity', 'Sex & Nudity'),
 DROP TABLE IF EXISTS players CASCADE;
 CREATE TABLE players
 (
-    player_id    UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
-    username     VARCHAR(50)  NOT NULL,
+    player_id    UUID      DEFAULT gen_random_uuid() UNIQUE PRIMARY KEY,
+    username     VARCHAR(50)  UNIQUE NOT NULL,
     password     VARCHAR(255) NOT NULL,
-    date_created TIMESTAMP DEFAULT NOW(),
-    last_played  TIMESTAMP DEFAULT NOW()
+    date_created TIMESTAMP DEFAULT NOW()
 );
 
 DROP TABLE IF EXISTS movies CASCADE;
 CREATE TABLE movies
 (
-    movie_id    UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
+    movie_id    UUID      DEFAULT gen_random_uuid() UNIQUE PRIMARY KEY,
     movie_title VARCHAR(255) NOT NULL,
     year        INTEGER      NOT NULL,
-    category INT REFERENCES categories (category_id),
+    imdb_id     varchar(12) UNIQUE NOT NULL,
     date_added  TIMESTAMP DEFAULT NOW()
 );
+CREATE UNIQUE INDEX idx_imdb_id ON movies (imdb_id);
+CREATE INDEX idx_title_year ON movies (movie_title, year);
+
 
 
 DROP TABLE IF EXISTS games CASCADE;
@@ -45,6 +47,7 @@ CREATE TABLE games
     start_time TIMESTAMP DEFAULT NOW() NOT NULL,
     end_time   TIMESTAMP               NOT NULL
 );
+CREATE UNIQUE INDEX idx_game_of_player ON games(game_id, player_id);
 
 DROP TABLE IF EXISTS guesses CASCADE;
 CREATE TABLE guesses
@@ -57,6 +60,7 @@ CREATE TABLE guesses
     guess_time       TIMESTAMP NOT NULL,
     is_correct       BOOLEAN   NOT NULL
 );
+
 
 DROP TABLE IF EXISTS scores CASCADE;
 CREATE TABLE scores
@@ -74,6 +78,6 @@ CREATE TABLE clues
     movie_id     UUID REFERENCES movies (movie_id),
     category_id  INT REFERENCES categories (category_id),
     clue_text    TEXT NOT NULL,
+    spoiler      BOOL      DEFAULT FALSE,
     date_created TIMESTAMP DEFAULT NOW()
 );
-
