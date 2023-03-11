@@ -1,6 +1,7 @@
 """
 Handles all database functions, configured for MongoDB connections
 """
+import os
 from datetime import datetime
 from psycopg import connect, ClientCursor, errors
 from psycopg.rows import dict_row, class_row
@@ -13,8 +14,9 @@ from imdb_dataclasses import Movie, Clue
 class DBHandler:
     _TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    def __init__(self,
-                 pg_url: str = "postgresql://tooch:spaghetti@localhost:5432/imdb"):
+    def __init__(self, pg_url: str = None):
+        if not pg_url:
+            pg_url = os.getenv('POSTGRES_URL')
         self.connection = None
         try:
             print(pg_url)
