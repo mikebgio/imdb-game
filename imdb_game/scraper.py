@@ -15,8 +15,8 @@ def clean_whitespace(text):
 
 
 def load_webpage(url):
-    r = requests.get(url)
-    return BeautifulSoup(r.text, "html.parser")
+    response = requests.get(url)
+    return BeautifulSoup(response.text, "html.parser")
 
 
 def create_clues_list(soup, categories, movie_object: Movie):
