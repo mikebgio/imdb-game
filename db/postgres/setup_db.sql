@@ -44,7 +44,7 @@ CREATE TABLE games
     game_id    UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
     player_id  UUID REFERENCES players (player_id),
     score      INTEGER   DEFAULT 0     NOT NULL,
-    round      INTEGER   DEFAULT 0     NOT NULL,
+    current_round      INTEGER   DEFAULT 0     NOT NULL,
     start_time TIMESTAMP DEFAULT NOW() NOT NULL,
     end_time   TIMESTAMP               NULL
 );
@@ -82,3 +82,31 @@ CREATE TABLE clues
     spoiler      BOOL,
     date_created TIMESTAMP DEFAULT NOW()
 );
+
+DROP TABLE IF EXISTS player_movies CASCADE;
+CREATE TABLE player_movies
+(
+    player_id   UUID REFERENCES players (player_id),
+    movie_id    UUID REFERENCES movies (movie_id),
+    date_played TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY (player_id, movie_id)
+);
+CREATE INDEX idx_date_played_movie ON player_movies (date_played);
+
+DROP TABLE IF EXISTS player_clues CASCADE;
+CREATE TABLE player_clues
+(
+    player_id   UUID REFERENCES players (player_id),
+    clue_id     UUID REFERENCES clues (clue_id),
+    date_played TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY (player_id, clue_id)
+);
+CREATE INDEX idx_date_played_clue ON player_clues (date_played);
+
+DROP TABLE IF EXISTS game_rounds CASCADE;
+CREATE TABLE game_rounds
+(
+    game_id      UUID REFERENCES games (game_id),
+    round_number INT NOT NULL,
+
+)

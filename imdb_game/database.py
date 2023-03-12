@@ -8,18 +8,17 @@ from psycopg.rows import dict_row, class_row
 import sys
 from uuid import UUID
 import time
-from imdb_dataclasses import Movie, Clue
+from imdb_dataclasses import Movie, Clue, Game, Player
 
 
 class DBHandler:
     _TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    def __init__(self, pg_url: str = None):
+    def __init__(self, pg_url: str = None) -> None:
         if not pg_url:
             pg_url = os.getenv('POSTGRES_URL')
         self.connection = None
         try:
-            print(pg_url)
             self.connection = connect(conninfo=pg_url, autocommit=True)
         except Exception as e:
             print(e)
@@ -65,6 +64,16 @@ class DBHandler:
         insert_values = (username, password)
         self.__execute_sql(insert_query, insert_values)
         print("Player added successfully")
+
+
+    def add_game(self, game_obj: Game):
+        insert_query = """
+        INSERT INTO games(player_id, score, round)
+        VALUES (%(player_id)s, %(score)s, %(round)s)
+        """
+        self.__execute_sql(insert_query, game_obj.dict())
+        print("New Game created successfully!")
+
 
     def add_movie(self, movie_object: Movie):
         """
@@ -113,7 +122,7 @@ class DBHandler:
                 if record:
                     return record
 
-    def add_clue(self, clue: dict):
+    def add_clue(self, clue_obj: Clue):
         """
         Add new hint to `hints` table when scraped from IMDB
         """
@@ -121,7 +130,7 @@ class DBHandler:
             INSERT INTO clues (movie_id, category_id, clue_text, spoiler)
             VALUES (%(movie_id)s, %(category_id)s, %(clue_text)s, %(spoiler)s)
         """
-        self.__execute_sql(insert_query, clue)
+        self.__execute_sql(insert_query, clue_obj.dict())
 
     def add_guess(self, player_id: UUID, guessed_movie_id: UUID,
                   is_correct: bool):
@@ -146,12 +155,55 @@ class DBHandler:
         print('Successfully added player score')
 
     def get_clues(self, movie_object: Movie):
-        select_query = """SELECT m.title, m.release_year, m.imdb_id,
-                cat.display_name, c.clue_text, c.spoiler
-                FROM clues c
-                JOIN movies m ON c.movie_id = m.movie_id
-                JOIN categories cat ON c.category_id = cat.category_id
-                WHERE m.imdb_id = %(imdb_id)s
-                ORDER BY cat.category_id;"""
+        select_query = """
+            SELECT m.title, m.release_year, m.imdb_id, cat.display_name, 
+            c.clue_text, c.spoiler
+            FROM clues c
+            JOIN movies m ON c.movie_id = m.movie_id
+            JOIN categories cat ON c.category_id = cat.category_id
+            WHERE m.imdb_id = %(imdb_id)s
+            ORDER BY cat.category_id;"""
         results = self.__execute_sql(select_query, movie_object.dict(), True)
         return results
+
+    def get_three_movie_options(self):
+        """
+        Returns a row of
+        """
+        select_query = """
+            SELECT movie_id, release_year
+            FROM movies
+            WHERE movie_id NOT IN (
+                SELECT movie_id
+                FROM player_movies
+                WHERE player_id = %s
+            )
+            ORDER BY random() DESC
+            LIMIT 3;
+        """
+        records = None
+        with self.connection.cursor(row_factory=dict_row) as cur:
+            try:
+                records = cur.execute(select_query, {}).fetchall()
+            except Exception as e:
+                print(e)
+            except errors.InFailedSqlTransaction as e:
+                print(e)
+            finally:
+                if records:
+                    return records
+
+    def get_clues_by_movie_id(self, movie_id: UUID):
+        records = None
+        select_query = """
+        SELECT * FROM clues WHERE movie_id = %s
+        """
+        with self.connection.cursor(row_factory=class_row(Clue)) as cur:
+            try:
+                records = cur.execute(select_query, [movie_id]).fetchall()
+            except errors.InFailedSqlTransaction as e:
+                print(e)
+            finally:
+                if records:
+                    return records
+
