@@ -36,7 +36,17 @@ CREATE TABLE movies
 CREATE UNIQUE INDEX idx_imdb_id ON movies (imdb_id);
 CREATE INDEX idx_title_year ON movies (stripped_title, release_year);
 
-
+-- DROP TABLE IF EXISTS game_rounds CASCADE;
+-- CREATE TABLE game_rounds
+-- (
+--     round_id     UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
+--     game_id      UUID REFERENCES games (game_id),
+--     round_number INT                     NOT NULL,
+--     movie_id     UUID REFERENCES movies (movie_id),
+--     start_time   TIMESTAMP DEFAULT NOW() NOT NULL,
+--     end_time     TIMESTAMP               NULL
+--
+-- );
 
 DROP TABLE IF EXISTS games CASCADE;
 CREATE TABLE games
@@ -44,7 +54,7 @@ CREATE TABLE games
     game_id    UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
     player_id  UUID REFERENCES players (player_id),
     score      INTEGER   DEFAULT 0     NOT NULL,
-    current_round      INTEGER   DEFAULT 0     NOT NULL,
+    round      INTEGER   DEFAULT 0     NOT NULL,
     start_time TIMESTAMP DEFAULT NOW() NOT NULL,
     end_time   TIMESTAMP               NULL
 );
@@ -93,10 +103,3 @@ CREATE TABLE player_clues
 );
 CREATE INDEX idx_date_played_clue ON player_clues (date_played);
 
-DROP TABLE IF EXISTS game_rounds CASCADE;
-CREATE TABLE game_rounds
-(
-    game_id      UUID REFERENCES games (game_id),
-    round_number INT NOT NULL,
-
-)
