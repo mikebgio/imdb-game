@@ -62,16 +62,6 @@ CREATE TABLE guesses
     is_correct       BOOLEAN                 NOT NULL
 );
 
-
-DROP TABLE IF EXISTS scores CASCADE;
-CREATE TABLE scores
-(
-    score_id   UUID      DEFAULT gen_random_uuid() PRIMARY KEY,
-    player_id  UUID REFERENCES players (player_id),
-    score      INTEGER                 NOT NULL,
-    score_time TIMESTAMP DEFAULT NOW() NOT NULL
-);
-
 DROP TABLE IF EXISTS clues CASCADE;
 CREATE TABLE clues
 (
