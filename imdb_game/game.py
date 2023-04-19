@@ -1,5 +1,5 @@
 """
-GameHost class
+GameShowHost class
 """
 from uuid import UUID, uuid4
 
@@ -8,10 +8,13 @@ from imdb_dataclasses import Clue, Game, Player, Round
 from utils import justify_text, strip_text
 
 
-class Tooch:
+class GameShowHost:
     """
     The "game show host" class of the IMDb Game. Controls functions for playing
     a game of IMDb. Currently only for running in the console.
+    Args:
+        player_instance (Player): The player object for the current game
+        game_instance (Game): The game object for the current game
     """
     DB: DBHandler = DBHandler()
     ID: UUID = uuid4()
@@ -29,9 +32,9 @@ class Tooch:
     def _get_three_years(self) -> list[dict]:
         """
         Get data to populate the Choose A Year Screen of the game
+        :return: list[dict] - list of movie data
         """
-        years = self.DB.get_three_movie_options()
-        return years
+        return self.DB.get_three_movie_options()
 
     def prompt_user_for_year_choice(self) -> dict:
         """
@@ -64,6 +67,10 @@ class Tooch:
     def __setup_current_round(self, chosen_movie: dict):
         """
         Creates a Round object that tracks clues played for a round
+        Args:
+            chosen_movie (dict): The movie data for the chosen movie
+        Returns:
+            None
         """
         movie = self.DB.get_movie_by_movie_id(chosen_movie['movie_id'])
         self.game.current_round = Round(self.game.round, movie)
@@ -85,8 +92,8 @@ class Tooch:
         """
         category = [cat['display_name'] for cat in self.categories if
                     cat['category_id'] == clue.category_id][0]
-        print(f'Clue number {self.game.current_round.get_clue_number()} is in the '
-              f'{category} category...\n')
+        print(f'Clue number {self.game.current_round.get_clue_number()} is in'
+              f' the {category} category...\n')
 
     def _announce_categories(self):
         """
@@ -109,7 +116,8 @@ class Tooch:
         Takes a player's guess text and decides whether it matches the title of
         the round's movie or not.
         """
-        if strip_text(guess) == self.game.current_round.current_movie.stripped_title:
+        if strip_text(
+                guess) == self.game.current_round.current_movie.stripped_title:
             return self._player_answer_correct()
         if strip_text(guess) == '/pass':
             return self._player_skip()
@@ -138,7 +146,6 @@ class Tooch:
         clue = self.game.current_round.get_random_clue()
         self._announce_category_name(clue)
         print(justify_text(clue.clue_text, 80))
-
 
     def _player_answer_correct(self):
         """
@@ -204,8 +211,8 @@ def main():
     """
     player = Player(username='mike',
                     player_id=UUID('507343e5-8790-4732-adf0-b3349e14e460'))
-    tooch = Tooch(player)
-    tooch.game_loop()
+    game_show_host = GameShowHost(player)
+    game_show_host.game_loop()
 
 
 if __name__ == '__main__':

@@ -21,6 +21,9 @@ class DBHandler:
     _TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self, pg_url: str = None) -> None:
+        """
+        Initializes the database handler
+        """
         if not pg_url:
             pg_url = os.getenv('POSTGRES_URL')
         self.connection = None
@@ -32,11 +35,14 @@ class DBHandler:
             sys.exit(1)
 
     def __del__(self):
+        """
+        Closes the connection to the database
+        """
         if self.connection:
             self.connection.close()
 
-    def __execute_sql(self, query: str, values: dict,
-                      return_data: bool = False):
+    def _execute_sql(self, query: str, values: dict,
+                     return_data: bool = False):
         """
         Executes the query string passed to it
         """
@@ -54,9 +60,12 @@ class DBHandler:
 
     def _update_timestamp_row(self, table_name, timestamp_column, target_id,
                               id_value):
+        """
+        Updates the timestamp column of the table passed to it
+        """
         update_query = """UPDATE %s SET %s = NOW() WHERE id = %s;"""
         update_values = (table_name, timestamp_column, target_id, id_value)
-        self.__execute_sql(update_query, update_values)
+        self._execute_sql(update_query, update_values)
 
     def add_player(self, username: str, password: str):
         """
@@ -68,7 +77,7 @@ class DBHandler:
             VALUES (%s, %s, %s)
         """
         insert_values = (username, password)
-        self.__execute_sql(insert_query, insert_values)
+        self._execute_sql(insert_query, insert_values)
         print("Player added successfully")
 
     def add_game(self, game_obj: Game):
@@ -79,7 +88,7 @@ class DBHandler:
         INSERT INTO games(player_id, score, round)
         VALUES (%(player_id)s, %(score)s, %(round)s)
         """
-        self.__execute_sql(insert_query, game_obj.dict())
+        self._execute_sql(insert_query, game_obj.dict())
         print("New Game created successfully!")
 
     def add_movie(self, movie_object: Movie):
@@ -92,7 +101,7 @@ class DBHandler:
             VALUES (%(title)s, %(release_year)s, %(imdb_id)s,
                     %(stripped_title)s)
         """
-        self.__execute_sql(insert_query, movie_object.dict())
+        self._execute_sql(insert_query, movie_object.dict())
         db_entry = self.get_movie_by_imdb_id(movie_object.imdb_id)
         print(f"Movie {movie_object.title} added successfully")
         return db_entry.movie_id
@@ -152,7 +161,7 @@ class DBHandler:
             INSERT INTO clues (movie_id, category_id, clue_text, spoiler)
             VALUES (%(movie_id)s, %(category_id)s, %(clue_text)s, %(spoiler)s)
         """
-        self.__execute_sql(insert_query, clue_obj.dict())
+        self._execute_sql(insert_query, clue_obj.dict())
 
     def add_guess(self, player_id: UUID, guessed_movie_id: UUID,
                   is_correct: bool):
@@ -164,7 +173,7 @@ class DBHandler:
             VALUES (%s, %s, %s)
         """
         insert_values = (player_id, guessed_movie_id, is_correct)
-        self.__execute_sql(insert_query, insert_values)
+        self._execute_sql(insert_query, insert_values)
         print("Guess added successfully")
 
     def add_score(self, player_id: UUID, score: int):
@@ -176,10 +185,14 @@ class DBHandler:
             VALUES (%s, %s)
         """
         insert_values = (player_id, score)
-        self.__execute_sql(insert_query, insert_values)
+        self._execute_sql(insert_query, insert_values)
         print('Successfully added player score')
 
     def get_clues(self, movie_object: Movie):
+        """
+        Selects all clues for a given Movie from `clues` table.
+        Returns a list of Clue objects.
+        """
         select_query = """
             SELECT m.title, m.release_year, m.imdb_id, cat.display_name, 
             c.clue_text, c.spoiler
@@ -188,7 +201,7 @@ class DBHandler:
             JOIN categories cat ON c.category_id = cat.category_id
             WHERE m.imdb_id = %(imdb_id)s
             ORDER BY cat.category_id;"""
-        results = self.__execute_sql(select_query, movie_object.dict(), True)
+        results = self._execute_sql(select_query, movie_object.dict(), True)
         return results
 
     def get_three_movie_options(self):
@@ -221,6 +234,10 @@ class DBHandler:
                     return records
 
     def get_clues_by_movie_id(self, movie_id: UUID):
+        """
+        Selects all clues for a given movie id from `clues` table.
+        Returns a list of Clue objects.
+        """
         records = None
         select_query = """
         SELECT * FROM clues WHERE movie_id = %s

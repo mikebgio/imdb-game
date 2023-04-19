@@ -1,3 +1,4 @@
+-- Creates Schema for IMDB Game
 DROP TABLE IF EXISTS categories CASCADE;
 CREATE TABLE categories
 (

@@ -9,38 +9,47 @@ from utils import strip_text, IMDB_ROOT
 from imdb_dataclasses import Movie, Clue
 import argparse
 
-def clean_whitespace(text):
+
+def clean_whitespace(text: str):
+    """
+    Removes whitespace from text
+    """
     warning_whitespace = ' ' * 24
     return text.replace('\n', '').replace(warning_whitespace, '').strip()
 
 
-def load_webpage(url):
-    response = requests.get(url)
-    return BeautifulSoup(response.text, "html.parser")
+def load_webpage(url: str):
+    """
+    Returns a BeautifulSoup object for the provided url.
+    If the url is invalid, returns None.
+    """
+    try:
+        response = requests.get(url)
+        return BeautifulSoup(response.text, "html.parser")
+    except requests.exceptions.RequestException:
+        return None
 
 
-def create_clues_list(soup, categories, movie_object: Movie):
+def create_clues_list(soup: BeautifulSoup, categories, movie_object: Movie):
     """
-    Generates a list of clues and links them to the provided movie ID
+    Creates a list of Clue objects for the provided BeautifulSoup op
     """
-    clues = []
+    clues: list = []
     list_item = 'ipl-zebra-list__item'
     pfx = 'advisory-'
-    for warning in soup.find_all(class_=list_item):
-        text: str = clean_whitespace(warning.contents[0])
-        if 'id' in warning.parent.parent.attrs:
-            if warning.parent.parent.attrs['id'].lower() != 'certificates':
-                tag = warning.parent.parent.attrs['id']
+    for user_submission in soup.find_all(class_=list_item):
+        text: str = clean_whitespace(user_submission.contents[0])
+        if 'id' in user_submission.parent.parent.attrs:
+            if user_submission.parent.parent.attrs['id'].lower() !=\
+                    'certificates':
+                tag = user_submission.parent.parent.attrs['id']
                 cat_short_name = tag.replace(pfx, '')
                 spoiler = False
                 if 'spoiler' in cat_short_name:
                     spoiler = True
                     cat_short_name = cat_short_name.replace('spoiler-', '')
                 category = [cat for cat in categories if
-                          cat['short_name'] == cat_short_name]
-                entry = {'text': text, 'spoiler': spoiler, 'points': 0,
-                         'category': category[0]['category_id'],
-                         'movie_id': movie_object.movie_id}
+                            cat['short_name'] == cat_short_name]
                 entry = Clue(
                     clue_text=text, spoiler=spoiler,
                     movie_id=movie_object.movie_id,
@@ -62,6 +71,12 @@ def search_imdb(search_term: str):
 
 
 def get_title(url):
+    """
+    Returns the title of the movie at the provided url
+    """
+    print(f'Getting the title for {url}...')
+    url = f'{IMDB_ROOT}{url}'
+    print(url)
     soup = load_webpage(url)
     return soup.h1.text
 
@@ -90,7 +105,12 @@ def insert_movies(database_handler, movies: list[Movie]):
         movie_id = database_handler.add_movie(movie.dict())
         movie.movie_id = movie_id
 
+
 def initial_setup():
+    """
+    Sets up a database with the top 250 movies and clues for each movie.
+    This is usually for the first time the scraper is run.
+    """
     db = DBHandler()
     movies = get_top_250_movies()
     insert_movies(db, movies)
@@ -103,7 +123,14 @@ def initial_setup():
             db.add_clue(clue.dict())
     del db
 
+
 def get_args(override: list = None):
+    """
+    Parses the command line arguments
+    """
+    if override is None:
+        override = []
+    # """
     parser = argparse.ArgumentParser(
         prog='scraper',
         description='Scrapes IMDb')
@@ -111,8 +138,17 @@ def get_args(override: list = None):
                         action='store_true', default=False,
                         help='Generate movies and clues from the IMDB Top'
                              '250 Movies of All Time')
+    # add and argument for verbose output
+    parser.add_argument('--verbose', '-v', dest='verbose',
+                        action='store_true', default=False,
+                        help='Print verbose output')
+    # arguments to change target database
+    parser.add_argument('--database', '-d', dest='database',
+                        default='imdb',
+                        help='The name of the database to use')
     args = parser.parse_args(override)
     return args
+
 
 def main():
     args = get_args()
