@@ -229,9 +229,7 @@ class DBHandler:
                 print(e)
             except errors.InFailedSqlTransaction as e:
                 print(e)
-            finally:
-                if records:
-                    return records
+            return records
 
     def get_clues_by_movie_id(self, movie_id: UUID):
         """
@@ -247,6 +245,20 @@ class DBHandler:
                 records = cur.execute(select_query, [movie_id]).fetchall()
             except errors.InFailedSqlTransaction as e:
                 print(e)
-            finally:
-                if records:
-                    return records
+            return records
+
+    def get_player_by_username(self, username: str):
+        """
+        Selects a player by username from `players` table.
+        Returns a Player object.
+        """
+        records = None
+        select_query = """
+        SELECT * FROM players WHERE username = %s
+        """
+        with self.connection.cursor(row_factory=class_row(Player)) as cur:
+            try:
+                records = cur.execute(select_query, [username]).fetchone()
+            except errors.InFailedSqlTransaction as e:
+                print(e)
+            return records
