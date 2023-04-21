@@ -6,9 +6,9 @@
     </section>
     <section id="select-movie-year">
         <ul id="movie-year-list">
-            <li class="year"><h2><a href="movie/{{ choices[0]['_id'] }}">{{ choices[0]['year'] }}</h2></li>
-            <li class="year"><h2><a href="movie/{{ choices[0]['_id'] }}">{{ choices[1]['year'] }}</h2></li>
-            <li class="year"><h2><a href="movie/{{ choices[0]['_id'] }}">{{ choices[2]['year'] }}</h2></li>
+            <li class="year"><h2><a href="movie/{{ choices[0]['movie_id'] }}">{{ choices[0]['release_year'] }}</h2></li>
+            <li class="year"><h2><a href="movie/{{ choices[1]['movie_id'] }}">{{ choices[1]['release_year'] }}</h2></li>
+            <li class="year"><h2><a href="movie/{{ choices[2]['movie_id'] }}">{{ choices[2]['release_year'] }}</h2></li>
         </ul>
     </section>
 {% endblock %}

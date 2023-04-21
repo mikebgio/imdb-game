@@ -4,11 +4,11 @@ Handles all database functions, configured for MongoDB connections
 import os
 from datetime import datetime
 from psycopg import connect, ClientCursor, errors
-from psycopg.rows import dict_row, class_row
+from psycopg.rows import dict_row, class_row, tuple_row
 import sys
 from uuid import UUID
 import time
-from imdb_dataclasses import Movie, Clue, Game, Player
+from .imdb_dataclasses import Movie, Clue, Game, Player
 from dotenv import load_dotenv
 
 load_dotenv('../.env')
@@ -41,21 +41,27 @@ class DBHandler:
         if self.connection:
             self.connection.close()
 
-    def _execute_sql(self, query: str, values: dict,
-                     return_data: bool = False):
+    def _execute_sql(self, query: str, values=None,
+                     return_data: bool = False,
+                     row_factory=tuple_row):
         """
         Executes the query string passed to it
         """
         result = None
-        with self.connection.cursor() as cur:
+        with self.connection.cursor(row_factory=row_factory) as cur:
             try:
-                cur.execute(query, values)
+                if values:
+                    cur.execute(query, values)
+                else:
+                    cur.execute(query)
             except errors.UniqueViolation as err:
                 print('SKIPPING DUPLICATE KEY')
                 print(err)
-            if return_data:
+            if return_data or query.startswith('SELECT'):
+                # self.connection.commit()
                 result = cur.fetchall()
                 return result
+        self.connection.commit()
         return None
 
     def _update_timestamp_row(self, table_name, timestamp_column, target_id,
@@ -67,17 +73,16 @@ class DBHandler:
         update_values = (table_name, timestamp_column, target_id, id_value)
         self._execute_sql(update_query, update_values)
 
-    def add_player(self, username: str, password: str):
+    def add_player(self, username: str):
         """
         Adds a new entry to the `players` table when a new player plays their
         first game
         """
         insert_query = """
-            INSERT INTO players (username, password)
-            VALUES (%s, %s, %s)
+            INSERT INTO players (username)
+            VALUES (%s)
         """
-        insert_values = (username, password)
-        self._execute_sql(insert_query, insert_values)
+        self._execute_sql(insert_query, [username])
         print("Player added successfully")
 
     def add_game(self, game_obj: Game):
@@ -111,14 +116,9 @@ class DBHandler:
         Gets all data from categories table and returns it as a list of dicts
         """
         categories = {}
-        with self.connection.cursor(row_factory=dict_row) as cur:
-            try:
-                cur.execute(
-                    """SELECT category_id, display_name, short_name 
-                    FROM categories""")
-            except Exception as exc:
-                print(exc)
-            categories = cur.fetchall()
+        select_query = """SELECT category_id, display_name, short_name
+         FROM categories"""
+        categories = self._execute_sql(select_query, row_factory=dict_row)
         return categories
 
     def get_movie_by_imdb_id(self, imdb_id):
@@ -132,7 +132,8 @@ class DBHandler:
         print(f'Finding {imdb_id}')
         with self.connection.cursor(row_factory=class_row(Movie)) as cur:
             try:
-                record = cur.execute(select_query, [imdb_id]).fetchone()
+                cur.execute(select_query, [imdb_id])
+                record = cur.fetchone()
             except errors.InFailedSqlTransaction as exc:
                 print(exc)
             return record
@@ -155,13 +156,15 @@ class DBHandler:
 
     def add_clue(self, clue_obj: Clue):
         """
-        Add new hint to `hints` table when scraped from IMDB
+        Add new Clue to `clues` table when scraped from IMDB
+        Args:
+            clue_obj: instance of Clue class
         """
         insert_query = """
             INSERT INTO clues (movie_id, category_id, clue_text, spoiler)
             VALUES (%(movie_id)s, %(category_id)s, %(clue_text)s, %(spoiler)s)
         """
-        self._execute_sql(insert_query, clue_obj.dict())
+        self._execute_sql(insert_query, values=clue_obj.dict())
 
     def add_guess(self, player_id: UUID, guessed_movie_id: UUID,
                   is_correct: bool):
@@ -176,22 +179,23 @@ class DBHandler:
         self._execute_sql(insert_query, insert_values)
         print("Guess added successfully")
 
-    def add_score(self, player_id: UUID, score: int):
-        """
-        Inserts new row into `scores` table (
-        """
-        insert_query = """
-            INSERT INTO scores (player_id, score)
-            VALUES (%s, %s)
-        """
-        insert_values = (player_id, score)
-        self._execute_sql(insert_query, insert_values)
-        print('Successfully added player score')
+    # def add_score(self, player_id: UUID, score: int):
+    #     """
+    #     Inserts new row into `scores` table
+    #     """
+    #     insert_query = """
+    #         INSERT INTO scores (player_id, score)
+    #         VALUES (%s, %s)
+    #     """
+    #     insert_values = (player_id, score)
+    #     self._execute_sql(insert_query, insert_values)
+    #     print('Successfully added player score')
 
     def get_clues(self, movie_object: Movie):
         """
         Selects all clues for a given Movie from `clues` table.
-        Returns a list of Clue objects.
+        Returns:
+            a list of Clue objects.
         """
         select_query = """
             SELECT m.title, m.release_year, m.imdb_id, cat.display_name, 
@@ -207,6 +211,8 @@ class DBHandler:
     def get_three_movie_options(self):
         """
         Selects three random rows from `movies`
+        Returns:
+            dict_row
         """
         select_query = """
             SELECT movie_id, release_year
@@ -240,12 +246,9 @@ class DBHandler:
         select_query = """
         SELECT * FROM clues WHERE movie_id = %s
         """
-        with self.connection.cursor(row_factory=class_row(Clue)) as cur:
-            try:
-                records = cur.execute(select_query, [movie_id]).fetchall()
-            except errors.InFailedSqlTransaction as e:
-                print(e)
-            return records
+        records = self._execute_sql(select_query, [movie_id], return_data=True,
+                                    row_factory=class_row(Clue))
+        return records
 
     def get_player_by_username(self, username: str):
         """
@@ -259,6 +262,7 @@ class DBHandler:
         with self.connection.cursor(row_factory=class_row(Player)) as cur:
             try:
                 records = cur.execute(select_query, [username]).fetchone()
+                print(records)
             except errors.InFailedSqlTransaction as e:
                 print(e)
             return records

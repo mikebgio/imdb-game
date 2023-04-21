@@ -3,9 +3,9 @@ GameShowHost class
 """
 from uuid import UUID, uuid4
 
-from database import DBHandler
-from imdb_dataclasses import Clue, Game, Player, Round
-from utils import justify_text, strip_text
+from .database import DBHandler
+from .imdb_dataclasses import Clue, Game, Player, Round
+from .utils import justify_text, strip_text
 
 
 class GameShowHost:
@@ -29,7 +29,7 @@ class GameShowHost:
             player_id=player_instance.player_id)
         self._greet_player()
 
-    def _get_three_years(self) -> list[dict]:
+    def get_three_years(self) -> list[dict]:
         """
         Get data to populate the Choose A Year Screen of the game
         :return: list[dict] - list of movie data
@@ -42,7 +42,7 @@ class GameShowHost:
         player in a prompt, waiting for the user choice.
         :return: dict - {movie_id, movie_year}
         """
-        choices = self._get_three_years()
+        choices = self.get_three_years()
         years = [str(year['release_year']) for year in choices]
         years_print = ', '.join(years)
         chosen_movie = None
@@ -89,11 +89,14 @@ class GameShowHost:
         """
         Print console message to player to say what kind of warning the clue is
         intended to convey
+        Args:
+            clue (Clue): The clue object
+        Returns:
+            str - category name as string
         """
-        category = [cat['display_name'] for cat in self.categories if
-                    cat['category_id'] == clue.category_id][0]
-        print(f'Clue number {self.game.current_round.get_clue_number()} is in'
-              f' the {category} category...\n')
+        category = self._get_category_name(clue)
+        print(f'This is a {category} warning!')
+        return category
 
     def _announce_categories(self):
         """
@@ -144,8 +147,14 @@ class GameShowHost:
         Get a random clue from Round.clues_pool and pretty print to the console
         """
         clue = self.game.current_round.get_random_clue()
-        self._announce_category_name(clue)
+        category = self._announce_category_name(clue)
         print(justify_text(clue.clue_text, 80))
+        return {
+            'clue_text': clue.clue_text,
+            'category': category,
+            'clue_number': self.game.current_round.current_clue_number,
+            'round_number': self.game.current_round.get_round(),
+        }
 
     def _player_answer_correct(self):
         """
@@ -177,13 +186,26 @@ class GameShowHost:
     def _get_player_guess(self) -> str:
         """
         Prompt player to input a text guess in console, returns guess text
+        Returns:
+            str - player guess text
+        Raises:
+            ValueError - if the user input is not a string
         """
         player_guess = None
-        try:
-            player_guess = input(self.PROMPT)
-        except ValueError as error:
-            print(error)
+        while True:
+            try:
+                player_guess = input(self.PROMPT)
+                break
+            except ValueError:
+                print("Invalid input. Please enter a valid guess.")
         return player_guess
+
+    def web_start_round(self):
+        """
+        Starts a new round for the web app
+        """
+        self.__setup_current_round(self.prompt_user_for_year_choice())
+        return self.present_clue()
 
     def game_loop(self):
         """

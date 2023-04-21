@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID
 
-from utils import IMDB_ROOT
+from .utils import IMDB_ROOT
 
 
 @dataclass
@@ -16,6 +16,15 @@ class Movie:
     stripped_title: str
     release_year: int
     movie_id: UUID = None
+
+    def dict(self):
+        return {
+            'imdb_id': self.imdb_id,
+            'title': self.title,
+            'stripped_title': self.stripped_title,
+            'release_year': self.release_year,
+            'movie_id': self.movie_id
+        }
 
     def get_link(self):
         """
@@ -37,6 +46,15 @@ class Clue:
     date_created: datetime
     clue_id: UUID = None
 
+    def dict(self):
+        return {
+            'movie_id': self.movie_id,
+            'category_id': self.category_id,
+            'clue_text': self.clue_text,
+            'spoiler': self.spoiler,
+            'date_created': self.date_created,
+            'clue_id': self.clue_id
+        }
 
 @dataclass
 class Player:
@@ -45,6 +63,14 @@ class Player:
     """
     username: str
     player_id: UUID = None
+    date_created: datetime = None
+
+
+    def dict(self):
+        return {
+            'username': self.username,
+            'player_id': self.player_id
+        }
 
 
 @dataclass
@@ -59,6 +85,16 @@ class Round:
     clues_played: list[Clue] = field(default_factory=list)
     current_clue_number: int = 0
     total_clues: int = 5
+
+    def dict(self):
+        return {
+            'round_number': self.round_number,
+            'current_movie': self.current_movie.dict(),
+            # 'clues_pool': [clue.dict() for clue in self.clues_pool],
+            'clues_played': [clue.dict() for clue in self.clues_played],
+            'current_clue_number': self.current_clue_number,
+            'total_clues': self.total_clues
+        }
 
     def increment_clue_number(self):
         """
@@ -113,6 +149,15 @@ class Game:
     GAME_OVER: bool = False
 
     # rounds: list = field(default_factory=list)
+    def dict(self):
+        return {
+            'player_id': self.player_id,
+            'score': self.score,
+            'round': self.get_round(),
+            'start_time': self.start_time,
+            'end_time': self.end_time,
+            'game_id': self.game_id,
+        }
 
     def increment_round(self):
         """
