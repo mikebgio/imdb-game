@@ -35,7 +35,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Run tests with pytest
-      run: pwd && pytest --junitxml=test-results.xml
+      run: pwd && ls -lah && pytest --junitxml=test-results.xml
 
     - name: Upload test results
       if: failure()
