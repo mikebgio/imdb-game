@@ -8,7 +8,6 @@ import testing.postgresql
 from datetime import datetime
 from psycopg import Connection
 
-
 @pytest.fixture(scope='module')
 def test_movie_1():
     test_movie_1 = dc.Movie(
@@ -45,10 +44,13 @@ DEFAULT_CATEGORIES = [{'category_id': 1, 'display_name': 'Sex & Nudity',
                        'display_name': 'Frightening & Intense Scenes',
                        'short_name': 'frightening'}]
 
+TEST_DB_URL = None
 
 @pytest.fixture(scope="module")
 def db_handler():
     with testing.postgresql.Postgresql() as postgresql:
+        global TEST_DB_URL
+        TEST_DB_URL = postgresql.url()
         connection = init_test_db(postgresql)
         db_handler = database_handler.DBHandler(pg_url=postgresql.url())
         yield db_handler
@@ -59,7 +61,7 @@ def test__get_postgres_connection(db_handler):
     Verifies that a connection can be made with private method
      _get_postgres_connection
     """
-    conn = db_handler._get_postgres_connection(os.getenv('POSTGRES_URL'))
+    conn = db_handler._get_postgres_connection(TEST_DB_URL)
     assert isinstance(conn, Connection)
 
 

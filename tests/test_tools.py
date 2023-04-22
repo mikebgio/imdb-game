@@ -1,7 +1,5 @@
-import testing.postgresql
 import psycopg
 import os
-import subprocess
 
 # Set the locale to en_US.UTF-8
 os.environ['LC_ALL'] = 'en_US.UTF-8'
