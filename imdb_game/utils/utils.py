@@ -4,7 +4,7 @@ Shared functions for imdb_game
 import unicodedata
 import textwrap
 
-IMDB_ROOT = 'https://www.imdb.com'
+IMDB_ROOT: str = 'https://www.imdb.com'
 
 
 def justify_text(text: str, width: int) -> str:
