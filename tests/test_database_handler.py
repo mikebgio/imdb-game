@@ -148,4 +148,3 @@ def test_get_categories(db_handler):
     assert categories == DEFAULT_CATEGORIES
     assert len(categories) == len(DEFAULT_CATEGORIES)
 
-def test_update_timestamp_row(db_handler)
