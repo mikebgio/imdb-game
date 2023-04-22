@@ -1,5 +1,5 @@
 from imdb_game.gameshow import game
-import database._dataclasses
+import database.dataclasses
 
 
 def main():

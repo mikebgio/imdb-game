@@ -10,6 +10,8 @@ IMDB_ROOT: str = 'https://www.imdb.com'
 def justify_text(text: str, width: int) -> str:
     """
     Formats long strings for more readable console output
+    Returns:
+        str
     """
     # Wrap the input text into lines with the specified width
     wrapped_lines = textwrap.wrap(text, width=width)
@@ -42,6 +44,8 @@ def strip_text(input_text: str) -> str:
     """
     Returns input string in lowercase, with spaces removed, special characters
     removed, and accented characters normalized
+    Returns:
+        str
     """
     input_text = remove_accents(input_text)
     return ''.join(e for e in input_text if e.isalnum()).lower()
@@ -51,6 +55,8 @@ def remove_accents(input_str: str) -> str:
     """
     Takes a string and converts all accented characters to unaccented characters
     and returns the string with unaccented characters
+    Returns:
+        str
     """
     # Normalize the string to the NFKD form (Compatibility Decomposition)
     normalized_str = unicodedata.normalize("NFKD", input_str)

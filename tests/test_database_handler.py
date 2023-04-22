@@ -2,7 +2,7 @@ import pytest
 import os
 from uuid import UUID, uuid4
 import imdb_game.database.handler as database_handler
-import imdb_game.database._dataclasses as dc
+import imdb_game.database.dataclasses as dc
 from test_tools import init_test_db
 import testing.postgresql
 from datetime import datetime, timedelta

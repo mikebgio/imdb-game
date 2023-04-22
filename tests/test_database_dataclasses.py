@@ -1,5 +1,5 @@
 import pytest
-import imdb_game.database._dataclasses as dc
+import imdb_game.database.dataclasses as dc
 from datetime import datetime
 from uuid import UUID, uuid4
 from imdb_game.utils.utils import strip_text, IMDB_ROOT

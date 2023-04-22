@@ -4,7 +4,7 @@ GameShowHost class
 from uuid import UUID, uuid4
 
 from ..database.handler import DBHandler
-from ..database._dataclasses import Clue, Game, Player, Round
+from ..database.dataclasses import Clue, Game, Player, Round
 from ..utils.utils import justify_text, strip_text
 
 

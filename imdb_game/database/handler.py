@@ -8,7 +8,7 @@ from psycopg.rows import dict_row, class_row, tuple_row
 import sys
 from uuid import UUID
 import time
-from ._dataclasses import Movie, Clue, Game, Player
+from .dataclasses import Movie, Clue, Game, Player
 from dotenv import load_dotenv
 
 load_dotenv('../../.env')
