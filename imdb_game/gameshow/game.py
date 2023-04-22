@@ -3,9 +3,9 @@ GameShowHost class
 """
 from uuid import UUID, uuid4
 
-from database.handler import DBHandler
-from database._dataclasses import Clue, Game, Player, Round
-from utils.utils import justify_text, strip_text
+from ..database.handler import DBHandler
+from ..database._dataclasses import Clue, Game, Player, Round
+from ..utils.utils import justify_text, strip_text
 
 
 class GameShowHost:
@@ -85,6 +85,17 @@ class GameShowHost:
         self.game.current_round.clues_pool = self.DB.get_clues_by_movie_id(
             self.game.current_round.current_movie.movie_id)
 
+    def _get_category_by_category_id(self, category_id: int):
+        """
+        Returns category dict pertaining to the provided category_id from
+        `self.categories`
+        Returns:
+            dict
+        """
+        category = list(filter(lambda item: item['category_id'] == category_id,
+                               self.categories))[0]
+        return category
+
     def _announce_category_name(self, clue: Clue):
         """
         Print console message to player to say what kind of warning the clue is
@@ -94,7 +105,7 @@ class GameShowHost:
         Returns:
             str - category name as string
         """
-        category = self.DB.get_category_by_category_id(clue.clue_id)
+        category = self._get_category_by_category_id(clue.category_id)
         print(f'This is a {category.display_name} warning!')
         return category
 

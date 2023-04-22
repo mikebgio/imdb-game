@@ -26,13 +26,8 @@ class DBHandler:
         """
         if not pg_url:
             pg_url = os.getenv('POSTGRES_URL')
-        self.connection = None
-        try:
-            self.connection = connect(conninfo=pg_url, autocommit=True)
-        except Exception as exc:
-            print(exc)
-            print('Failed to connect')
-            sys.exit(1)
+        self.connection = self._get_postgres_connection(pg_url)
+
 
     def __del__(self):
         """
@@ -40,6 +35,18 @@ class DBHandler:
         """
         if self.connection:
             self.connection.close()
+
+    def _get_postgres_connection(self, pg_url: str):
+        """
+        Accepts a postgresql URL and returns a connection
+        """
+        try:
+            connection = connect(conninfo=pg_url, autocommit=True)
+        except Exception as exc:
+            print(exc)
+            print('Failed to connect')
+            sys.exit(1)
+        return connection
 
     def _execute_sql(self, query: str, values=None,
                      return_data: bool = False,
@@ -57,8 +64,11 @@ class DBHandler:
             except errors.UniqueViolation as err:
                 print('SKIPPING DUPLICATE KEY')
                 print(err)
-            if return_data or query.startswith('SELECT'):
-                # self.connection.commit()
+            if return_data and query.startswith('SELECT'):
+                result = cur.fetchall()
+                return result
+            elif return_data:
+                self.connection.commit()
                 result = cur.fetchall()
                 return result
         self.connection.commit()
@@ -72,19 +82,6 @@ class DBHandler:
         update_query = """UPDATE %s SET %s = NOW() WHERE id = %s;"""
         update_values = (table_name, timestamp_column, target_id, id_value)
         self._execute_sql(update_query, update_values)
-
-    def get_category_by_category_id(self, category_id: int):
-        """
-        SELECTS the category dict pertaining to the category_id provided
-        Returns:
-            dict
-        """
-        select_query = """
-        SELECT * FROM categories WHERE category_id = %s
-        """
-        category = self._execute_sql(select_query, category_id,
-                                     return_data=True)
-        return category
 
     def add_player(self, username: str):
         """
@@ -131,7 +128,8 @@ class DBHandler:
         categories = {}
         select_query = """SELECT category_id, display_name, short_name
          FROM categories"""
-        categories = self._execute_sql(select_query, row_factory=dict_row)
+        categories = self._execute_sql(select_query, row_factory=dict_row,
+                                       return_data=True)
         return categories
 
     def get_movie_by_imdb_id(self, imdb_id):
@@ -177,7 +175,7 @@ class DBHandler:
             INSERT INTO clues (movie_id, category_id, clue_text, spoiler)
             VALUES (%(movie_id)s, %(category_id)s, %(clue_text)s, %(spoiler)s)
         """
-        self._execute_sql(insert_query, values=clue_obj.dict())
+        result = self._execute_sql(insert_query, values=clue_obj.dict())
 
     def add_guess(self, player_id: UUID, guessed_movie_id: UUID,
                   is_correct: bool):
@@ -185,8 +183,8 @@ class DBHandler:
         Adds new player guess to `guesses` table when a player makes a guess
         """
         insert_query = """
-            INSERT INTO guesses (player_id, guessed_movie_id, is_correct)
-            VALUES (%s, %s, %s)
+            INSERT INTO guesses (player_id, guessed_movie_id, is_correct, guess_text)
+            VALUES (%s, %s, %s, %s)
         """
         insert_values = (player_id, guessed_movie_id, is_correct)
         self._execute_sql(insert_query, insert_values)

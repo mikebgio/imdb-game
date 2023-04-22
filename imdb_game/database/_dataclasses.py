@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID
 
-from utils.utils import IMDB_ROOT
+from ..utils.utils import IMDB_ROOT
 
 
 @dataclass
@@ -69,7 +69,8 @@ class Player:
     def dict(self):
         return {
             'username': self.username,
-            'player_id': self.player_id
+            'player_id': self.player_id,
+            'date_created': self.date_created
         }
 
 

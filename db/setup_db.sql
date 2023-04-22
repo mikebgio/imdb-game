@@ -21,7 +21,8 @@ CREATE TABLE players
     player_id    UUID      DEFAULT gen_random_uuid() UNIQUE PRIMARY KEY,
     username     VARCHAR(32) UNIQUE NOT NULL,
 --     password     VARCHAR(48)       NOT NULL,
-    date_created TIMESTAMP DEFAULT NOW()
+    date_created TIMESTAMP DEFAULT NOW(),
+    date_last_played TIMESTAMP DEFAULT NOW()
 );
 
 DROP TABLE IF EXISTS movies CASCADE;
