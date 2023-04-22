@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID
 
-from ..utils.utils import IMDB_ROOT
+from ..utils.utils import IMDB_ROOT, strip_text
 
 
 @dataclass
@@ -11,7 +11,7 @@ class Movie:
     """
     SELECT imdb_id, title, stripped_title, release_year, imdb_id
     """
-    imdb_id: UUID
+    imdb_id: str
     title: str
     stripped_title: str
     release_year: int
@@ -71,7 +71,8 @@ class Player:
         return {
             'username': self.username,
             'player_id': self.player_id,
-            'date_created': self.date_created
+            'date_created': self.date_created,
+            'date_last_played': self.date_last_played
         }
 
 
@@ -87,12 +88,13 @@ class Round:
     clues_played: list[Clue] = field(default_factory=list)
     current_clue_number: int = 0
     total_clues: int = 5
+    game_id: UUID = None
 
     def dict(self):
         return {
             'round_number': self.round_number,
             'current_movie': self.current_movie.dict(),
-            # 'clues_pool': [clue.dict() for clue in self.clues_pool],
+            'clues_pool': [clue.dict() for clue in self.clues_pool],
             'clues_played': [clue.dict() for clue in self.clues_played],
             'current_clue_number': self.current_clue_number,
             'total_clues': self.total_clues
@@ -159,6 +161,7 @@ class Game:
             'start_time': self.start_time,
             'end_time': self.end_time,
             'game_id': self.game_id,
+            'GAME_OVER': self.GAME_OVER
         }
 
     def increment_round(self):
@@ -194,3 +197,4 @@ class Game:
         Pretty print the player's current score in console
         """
         print(f'Your current score is: {self.score}')
+        return self.score

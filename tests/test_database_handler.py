@@ -1,36 +1,12 @@
 import pytest
 import os
-from uuid import UUID
+from uuid import UUID, uuid4
 import imdb_game.database.handler as database_handler
 import imdb_game.database._dataclasses as dc
 from test_tools import init_test_db
 import testing.postgresql
-from datetime import datetime
+from datetime import datetime, timedelta
 from psycopg import Connection
-
-@pytest.fixture(scope='module')
-def test_movie_1():
-    test_movie_1 = dc.Movie(
-        movie_id=UUID('12345678-1234-5678-1234-567812345678'),
-        imdb_id='ttXX345XX', title='Test Movie',
-        stripped_title='testmovie', release_year=1999)
-    yield test_movie_1
-
-
-@pytest.fixture(scope='module')
-def test_movie_2():
-    test_movie_2 = dc.Movie(
-        movie_id=UUID('12345678-1234-5678-1234-567888888888'),
-        imdb_id='ttXX456XX', title='Test Movie 2: The Sequel',
-        stripped_title='testmovie2thesequel', release_year=2013)
-    yield test_movie_2
-
-
-@pytest.fixture(scope='module')
-def player():
-    new_player = dc.Player('testuser')
-    yield new_player
-
 
 DEFAULT_CATEGORIES = [{'category_id': 1, 'display_name': 'Sex & Nudity',
                        'short_name': 'nudity'},
@@ -46,6 +22,7 @@ DEFAULT_CATEGORIES = [{'category_id': 1, 'display_name': 'Sex & Nudity',
 
 TEST_DB_URL = None
 
+
 @pytest.fixture(scope="module")
 def db_handler():
     with testing.postgresql.Postgresql() as postgresql:
@@ -54,6 +31,33 @@ def db_handler():
         connection = init_test_db(postgresql)
         db_handler = database_handler.DBHandler(pg_url=postgresql.url())
         yield db_handler
+
+
+@pytest.fixture(scope='module')
+def movie_1():
+    test_movie_1 = dc.Movie(
+        movie_id=UUID('12345678-1234-5678-1234-567812345678'),
+        imdb_id='ttXX345XX', title='Test Movie',
+        stripped_title='testmovie', release_year=1999)
+    yield test_movie_1
+
+
+@pytest.fixture(scope='module')
+def movie_2():
+    test_movie_2 = dc.Movie(
+        movie_id=UUID('12345678-1234-5678-1234-567888888888'),
+        imdb_id='ttXX456XX', title='Test Movie 2: The Sequel',
+        stripped_title='testmovie2thesequel', release_year=2013)
+    yield test_movie_2
+
+
+@pytest.fixture(scope='module')
+def player(db_handler):
+    username = 'test_user'
+    new_player = dc.Player(username=username)
+    db_handler.add_player_by_username(new_player)
+    new_player = db_handler.get_player_by_username(new_player)
+    yield new_player
 
 
 def test__get_postgres_connection(db_handler):
@@ -80,13 +84,47 @@ def test__execute_sql(db_handler):
     assert movies == []
 
 
-def test_add_player(db_handler, player):
+def test_add_player(db_handler):
     """
     Tests adding player to players Table
     """
-    db_handler.add_player(player)
-    player_data = db_handler.get_player_by_username(player)
-    assert player.username == player_data.username
+    #  Add a second player separate from player()
+    username_only_player = dc.Player(username='second_test_user')
+    db_handler.add_player_by_username(username_only_player)
+    player_data = db_handler.get_player_by_username(username_only_player)
+    assert username_only_player.username == player_data.username
+    assert player_data.player_id is not None
+    assert isinstance(player_data.player_id, UUID)
+    assert isinstance(player_data.date_created, datetime)
+    assert isinstance(player_data.date_last_played, datetime)
+
+
+def test_add_full_player(db_handler):
+    today = datetime.utcnow()
+    three_days_ago = today - timedelta(days=3)
+    player_id = uuid4()
+    full_player_creation = dc.Player(username='all_data_user',
+                                     player_id=player_id,
+                                     date_created=three_days_ago,
+                                     date_last_played=today)
+    db_handler.add_full_player(full_player_creation)
+    player_data = db_handler.get_player_by_username(full_player_creation)
+    assert full_player_creation.username == player_data.username
+    assert player_data.player_id == full_player_creation.player_id
+    assert player_data.date_created == full_player_creation.date_created
+    assert player_data.date_last_played == full_player_creation.date_last_played
+    assert player_data.player_id == player_id
+    assert isinstance(player_data.player_id, UUID)
+    assert isinstance(player_data.date_created, datetime)
+    assert isinstance(player_data.date_last_played, datetime)
+
+
+def test_update_player_last_played(db_handler, player):
+    old_data = db_handler.get_player_by_username(player)
+    db_handler._update_player_last_played(player)
+    new_data = db_handler.get_player_by_username(player)
+    assert player.date_last_played < new_data.date_last_played
+    assert old_data.date_last_played < new_data.date_last_played
 
 
 def test_get_player_by_username(db_handler, player):
@@ -107,11 +145,11 @@ def test_add_game(db_handler, player):
     # Add assertions for the added game
 
 
-def test_add_movie(db_handler, test_movie_1, test_movie_2):
+def test_add_movie(db_handler, movie_1, movie_2):
     """
     Tests adding a new Movie to the movies Table
     """
-    for movie in [test_movie_1, test_movie_2]:
+    for movie in [movie_1, movie_2]:
         db_handler.add_movie(movie)
         movie_from_db = db_handler.get_movie_by_imdb_id(movie.imdb_id)
         assert movie_from_db.title == movie.title
@@ -120,11 +158,11 @@ def test_add_movie(db_handler, test_movie_1, test_movie_2):
         assert movie_from_db.stripped_title == movie.stripped_title
 
 
-def test_get_movie_by_movie_id(db_handler, test_movie_1, test_movie_2):
+def test_get_movie_by_movie_id(db_handler, movie_1, movie_2):
     """
     Tests getting a Movie from the movies Table by a movie_id
     """
-    for movie in [test_movie_1, test_movie_2]:
+    for movie in [movie_1, movie_2]:
         movie_from_db = db_handler.get_movie_by_imdb_id(movie.imdb_id)
         assert movie_from_db.title == movie.title
         assert movie_from_db.imdb_id == movie.imdb_id
@@ -132,20 +170,19 @@ def test_get_movie_by_movie_id(db_handler, test_movie_1, test_movie_2):
         assert movie_from_db.stripped_title == movie.stripped_title
 
 
-def test_add_clue(db_handler, test_movie_1):
+def test_add_clue(db_handler, movie_1):
     """
     Tests creating a new clue for a target movie in the clues Table
     """
-    movie_from_db = db_handler.get_movie_by_imdb_id(test_movie_1.imdb_id)
+    movie_from_db = db_handler.get_movie_by_imdb_id(movie_1.imdb_id)
     assert movie_from_db
     clue = dc.Clue(movie_id=movie_from_db.movie_id,
                    category_id=1, clue_text='Test clue', spoiler=False,
-                   date_created=datetime.now())
+                   date_created=datetime.utcnow())
     db_handler.add_clue(clue)
     clues_from_db = db_handler.get_clues_by_movie_id(movie_from_db.movie_id)
     assert any([clue_from_db.clue_text == clue.clue_text for clue_from_db in
                 clues_from_db])
-
 
 def test_get_categories(db_handler):
     """
@@ -154,3 +191,4 @@ def test_get_categories(db_handler):
     categories = db_handler.get_categories()
     assert categories == DEFAULT_CATEGORIES
     assert len(categories) == len(DEFAULT_CATEGORIES)
+
