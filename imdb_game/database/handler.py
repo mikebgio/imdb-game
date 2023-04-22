@@ -28,7 +28,6 @@ class DBHandler:
             pg_url = os.getenv('POSTGRES_URL')
         self.connection = self._get_postgres_connection(pg_url)
 
-
     def __del__(self):
         """
         Closes the connection to the database
@@ -83,7 +82,7 @@ class DBHandler:
         update_values = (table_name, timestamp_column, target_id, id_value)
         self._execute_sql(update_query, update_values)
 
-    def add_player(self, username: str):
+    def add_player(self, player: Player):
         """
         Adds a new entry to the `players` table when a new player plays their
         first game
@@ -92,7 +91,9 @@ class DBHandler:
             INSERT INTO players (username)
             VALUES (%s)
         """
-        self._execute_sql(insert_query, [username])
+        print(f"Adding {player.username}")
+
+        self._execute_sql(insert_query, [player.username])
         print("Player added successfully")
 
     def add_game(self, game_obj: Game):
@@ -261,19 +262,14 @@ class DBHandler:
                                     row_factory=class_row(Clue))
         return records
 
-    def get_player_by_username(self, username: str):
+    def get_player_by_username(self, player: Player):
         """
         Selects a player by username from `players` table.
         Returns a Player object.
         """
-        records = None
-        select_query = """
-        SELECT * FROM players WHERE username = %s
-        """
-        with self.connection.cursor(row_factory=class_row(Player)) as cur:
-            try:
-                records = cur.execute(select_query, [username]).fetchone()
-                print(records)
-            except errors.InFailedSqlTransaction as e:
-                print(e)
-            return records
+        select_query = "SELECT * FROM players WHERE username = %s"
+        player_data = self._execute_sql(select_query, [player.username],
+                                   row_factory=class_row(Player),
+                                   return_data=True)[0]
+        print(f'player is {player_data}')
+        return player_data

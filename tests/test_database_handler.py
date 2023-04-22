@@ -27,6 +27,12 @@ def test_movie_2():
     yield test_movie_2
 
 
+@pytest.fixture(scope='module')
+def player():
+    new_player = dc.Player('testuser')
+    yield new_player
+
+
 DEFAULT_CATEGORIES = [{'category_id': 1, 'display_name': 'Sex & Nudity',
                        'short_name': 'nudity'},
                       {'category_id': 2, 'display_name': 'Violence & Gore',
@@ -56,6 +62,7 @@ def test__get_postgres_connection(db_handler):
     conn = db_handler._get_postgres_connection(os.getenv('POSTGRES_URL'))
     assert isinstance(conn, Connection)
 
+
 def test__execute_sql(db_handler):
     """
     Tests a basic SELECT query on the categories table
@@ -71,30 +78,28 @@ def test__execute_sql(db_handler):
     assert movies == []
 
 
-def test_add_player(db_handler):
+def test_add_player(db_handler, player):
     """
     Tests adding player to players Table
     """
-    username = 'testuser'
-    db_handler.add_player(username)
-    player = db_handler.get_player_by_username(username)
-    assert player.username == username
+    db_handler.add_player(player)
+    player_data = db_handler.get_player_by_username(player)
+    assert player.username == player_data.username
 
 
-def test_get_player_by_username(db_handler):
+def test_get_player_by_username(db_handler, player):
     """
     Tests SELECTing a player by their username from players Table
     """
-    username = 'testuser'
-    player = db_handler.get_player_by_username(username)
-    assert player.username == username
+    player_data = db_handler.get_player_by_username(player)
+    assert player.username == player_data.username
 
 
-def test_add_game(db_handler):
+def test_add_game(db_handler, player):
     """
     Tests adding Game to the games Table
     """
-    player = db_handler.get_player_by_username('testuser')
+    player_data = db_handler.get_player_by_username(player)
     game = dc.Game(player_id=player.player_id, score=10, round=1)
     db_handler.add_game(game)
     # Add assertions for the added game
@@ -147,4 +152,3 @@ def test_get_categories(db_handler):
     categories = db_handler.get_categories()
     assert categories == DEFAULT_CATEGORIES
     assert len(categories) == len(DEFAULT_CATEGORIES)
-

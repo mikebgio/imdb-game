@@ -64,6 +64,7 @@ class Player:
     username: str
     player_id: UUID = None
     date_created: datetime = None
+    date_last_played: datetime = None
 
 
     def dict(self):
