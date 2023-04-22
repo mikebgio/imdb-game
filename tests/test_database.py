@@ -2,16 +2,16 @@ import pytest
 from uuid import UUID
 from psycopg import connect
 from psycopg.errors import UniqueViolation
-from imdb_game.database.handler import DBHandler
-from imdb_game.database._dataclasses import Movie, Clue, Game, Player
+import imdb_game.database.handler as database_handler
+import imdb_game.database._dataclasses as dc
 from test_tools import init_test_db
 import testing.postgresql
 from datetime import datetime
 
-TEST_MOVIE_1 = Movie(movie_id=UUID('12345678-1234-5678-1234-567812345678'),
+TEST_MOVIE_1 = dc.Movie(movie_id=UUID('12345678-1234-5678-1234-567812345678'),
               imdb_id='ttXX345XX', title='Test Movie',
               stripped_title='testmovie', release_year=1999)
-TEST_MOVIE_2 = Movie(movie_id=UUID('12345678-1234-5678-1234-567888888888'),
+TEST_MOVIE_2 = dc.Movie(movie_id=UUID('12345678-1234-5678-1234-567888888888'),
               imdb_id='ttXX456XX', title='Test Movie 2: The Sequel',
               stripped_title='testmovie2thesequel', release_year=2013)
 
@@ -19,7 +19,7 @@ TEST_MOVIE_2 = Movie(movie_id=UUID('12345678-1234-5678-1234-567888888888'),
 def db_handler():
     with testing.postgresql.Postgresql() as postgresql:
         connection = init_test_db(postgresql)
-        db_handler = DBHandler(pg_url=postgresql.url())
+        db_handler = database_handler.DBHandler(pg_url=postgresql.url())
         yield db_handler
 
 
@@ -38,7 +38,7 @@ def test_get_player_by_username(db_handler):
 
 def test_add_game(db_handler):
     player = db_handler.get_player_by_username('testuser')
-    game = Game(player_id=player.player_id, score=10, round=1)
+    game = dc.Game(player_id=player.player_id, score=10, round=1)
     db_handler.add_game(game)
     # Add assertions for the added game
 
@@ -56,7 +56,7 @@ def test_add_movie(db_handler):
 def test_add_clue(db_handler):
     movie_from_db = db_handler.get_movie_by_imdb_id(TEST_MOVIE_1.imdb_id)
     assert movie_from_db
-    clue = Clue(movie_id=movie_from_db.movie_id,
+    clue = dc.Clue(movie_id=movie_from_db.movie_id,
                 category_id=1, clue_text='Test clue', spoiler=False,
                 date_created=datetime.now())
     clue_row = db_handler.add_clue(clue)
