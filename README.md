@@ -1,6 +1,6 @@
 # imdb-game
 
-[![Python Testing](https://github.com/mikebgio/imdb-game/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/mikebgio/imdb-game/actions/workflows/main.yml) [![CodeQL](https://github.com/mikebgio/imdb-game/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/mikebgio/imdb-game/actions/workflows/github-code-scanning/codeql)
+[![PyTest](https://github.com/mikebgio/imdb-game/actions/workflows/main.yml/badge.svg)](https://github.com/mikebgio/imdb-game/actions/workflows/main.yml) [![CodeQL](https://github.com/mikebgio/imdb-game/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/mikebgio/imdb-game/actions/workflows/github-code-scanning/codeql)
 
 Web version of Nick Martucci's Inappropriate Movie Database gameshow
 
