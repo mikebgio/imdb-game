@@ -3,9 +3,9 @@ GameShowHost class
 """
 from uuid import UUID, uuid4
 
-from .database import DBHandler
-from .imdb_dataclasses import Clue, Game, Player, Round
-from .utils import justify_text, strip_text
+from database.handler import DBHandler
+from database._dataclasses import Clue, Game, Player, Round
+from utils.utils import justify_text, strip_text
 
 
 class GameShowHost:
@@ -94,8 +94,8 @@ class GameShowHost:
         Returns:
             str - category name as string
         """
-        category = self._get_category_name(clue)
-        print(f'This is a {category} warning!')
+        category = self.DB.get_category_by_category_id(clue.clue_id)
+        print(f'This is a {category.display_name} warning!')
         return category
 
     def _announce_categories(self):

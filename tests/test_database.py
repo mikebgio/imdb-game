@@ -2,8 +2,8 @@ import pytest
 from uuid import UUID
 from psycopg import connect
 from psycopg.errors import UniqueViolation
-from imdb_game.database import DBHandler
-from imdb_game.imdb_dataclasses import Movie, Clue, Game, Player
+from imdb_game.database.handler import DBHandler
+from imdb_game.database._dataclasses import Movie, Clue, Game, Player
 from test_tools import init_test_db
 import testing.postgresql
 from datetime import datetime

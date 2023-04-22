@@ -8,10 +8,10 @@ from psycopg.rows import dict_row, class_row, tuple_row
 import sys
 from uuid import UUID
 import time
-from .imdb_dataclasses import Movie, Clue, Game, Player
+from ._dataclasses import Movie, Clue, Game, Player
 from dotenv import load_dotenv
 
-load_dotenv('../.env')
+load_dotenv('../../.env')
 
 
 class DBHandler:
@@ -72,6 +72,19 @@ class DBHandler:
         update_query = """UPDATE %s SET %s = NOW() WHERE id = %s;"""
         update_values = (table_name, timestamp_column, target_id, id_value)
         self._execute_sql(update_query, update_values)
+
+    def get_category_by_category_id(self, category_id: int):
+        """
+        SELECTS the category dict pertaining to the category_id provided
+        Returns:
+            dict
+        """
+        select_query = """
+        SELECT * FROM categories WHERE category_id = %s
+        """
+        category = self._execute_sql(select_query, category_id,
+                                     return_data=True)
+        return category
 
     def add_player(self, username: str):
         """
