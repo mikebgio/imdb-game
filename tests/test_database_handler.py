@@ -184,6 +184,12 @@ def test_add_clue(db_handler, movie_1):
     assert any([clue_from_db.clue_text == clue.clue_text for clue_from_db in
                 clues_from_db])
 
+def test_get_clues_by_movie_id(db_handler, movie_1):
+    clues = db_handler.get_clues_by_movie_id(movie_1.movie_id)
+    assert isinstance(clues, list)
+    for clue in clues:
+        assert isinstance(clue, dc.Clue)
+
 def test_get_categories(db_handler):
     """
     Tests getting the categories dictionary
