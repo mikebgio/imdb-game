@@ -16,13 +16,17 @@ class GameShowHost:
         player_instance (Player): The player object for the current game
         game_instance (Game): The game object for the current game
     """
-    DB: DBHandler = DBHandler()
     ID: UUID = uuid4()
     WRONG_ANSWER_DEDUCTION: int = 1
     PROMPT: str = '=> '
 
     def __init__(self, player_instance: Player,
-                 game_instance: Game = None):
+                 game_instance: Game = None,
+                 database: DBHandler = None):
+        if not database:
+            self.DB = DBHandler()
+        else:
+            self.DB = database
         self.categories = self.DB.get_categories()
         self.player: Player = player_instance
         self.game: Game = game_instance or Game(
