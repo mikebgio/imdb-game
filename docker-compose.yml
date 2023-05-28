@@ -1,21 +1,32 @@
 version: "3.8"
-# For local running of the application
-volumes:
-  mongo:
-    name: mongo
 
 services:
-  mongo:
+
+  db:
     build: db/
-    container_name: "imdb-game-mongodb"
-    volumes:
-      - mongo:/data/db
+    container_name: "imdb_game-postgres"
+    env_file:
+      - .env
+    restart: always
     ports:
-      - "27017:27017"
+      - "5555:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "--dbname=imdb", "--username=$POSTGRES_USER" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+
   web:
     build: .
-    container_name: "imdb-game-webserver"
+    container_name: "imdb_game-webserver"
+    env_file: .env
     ports:
-      - "80:5000"
-    environment:
-      - MONGO_URL=mongodb://mongo:27017
+      - "3000:3000"
+    healthcheck:
+      test: [ "CMD", "python3", "imdb_game/healthcheck/healthcheck.py" ]
+      timeout: 30s
+      interval: 10s
+      retries: 10
+    depends_on:
+      db:
+        condition: service_healthy
