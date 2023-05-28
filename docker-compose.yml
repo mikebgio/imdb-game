@@ -4,15 +4,15 @@ services:
 
 
   db:
-    build: db/postgres/
+    build: db/
     container_name: "imdb_game-postgres"
     env_file:
       - .env
     restart: always
     ports:
-      - "5432:5432"
+      - "5555:5432"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: [ "CMD", "pg_isready", "--dbname=imdb", "--username=$POSTGRES_USER" ]
       timeout: 45s
       interval: 10s
       retries: 10
@@ -20,8 +20,14 @@ services:
   web:
     build: .
     container_name: "imdb_game-webserver"
+    env_file: .env
     ports:
-      - "80:5000"
+      - "3000:3000"
+    healthcheck:
+        test: [ "CMD", "python3", "imdb_game/healthcheck/healthcheck.py"]
+        timeout: 30s
+        interval: 10s
+        retries: 10
     depends_on:
       db:
         condition: service_healthy

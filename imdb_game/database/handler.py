@@ -9,9 +9,9 @@ import sys
 from uuid import UUID
 import time
 from .dataclasses import Movie, Clue, Game, Player
-from dotenv import load_dotenv
-
-load_dotenv('../../.env')
+# from dotenv import load_dotenv
+#
+# load_dotenv('../../.env')
 
 
 class DBHandler:
