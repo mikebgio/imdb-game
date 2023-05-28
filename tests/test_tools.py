@@ -1,3 +1,6 @@
+"""
+Functions common to other test files
+"""
 import psycopg
 import os
 
