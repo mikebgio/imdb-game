@@ -105,3 +105,5 @@ CREATE TABLE player_clues
 );
 CREATE INDEX idx_date_played_clue ON player_clues (date_played);
 
+\copy movies FROM 'data/movies.csv' CSV HEADER;
+\copy clues FROM 'data/clues.csv' CSV HEADER;
