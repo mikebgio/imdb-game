@@ -1,11 +1,9 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name='imdb-game',
     version='0.9.0',
-    packages=['flask_app', 'imdb_game', 'imdb_game.utils', 'imdb_game.scraper',
-              'imdb_game.database', 'imdb_game.gameshow',
-              'imdb_game.healthcheck'],
+    packages=find_packages(),
     url='https://github.com/mikebgio/imdb-game',
     license='',
     author='Michael Giordano',

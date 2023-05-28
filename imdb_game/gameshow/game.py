@@ -110,7 +110,7 @@ class GameShowHost:
             str - category name as string
         """
         category = self._get_category_by_category_id(clue.category_id)
-        print(f'This is a {category.display_name} warning!')
+        print(f'This is a {category["display_name"]} warning!')
         return category
 
     def _announce_categories(self):
@@ -168,7 +168,7 @@ class GameShowHost:
             'clue_text': clue.clue_text,
             'category': category,
             'clue_number': self.game.current_round.current_clue_number,
-            'round_number': self.game.current_round.get_round(),
+            'round_number': self.game.get_round(),
         }
 
     def _player_answer_correct(self):
