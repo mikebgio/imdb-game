@@ -21,7 +21,7 @@ the name of a movie. The earlier you guess correctly, the more points you earn.
 
 ### Pre-Requisites
 
-1. Linux
+1. Linux or MacOS (haven't tested or tried on Windows yet)
 2. [Docker](https://docs.docker.com/get-docker/)
 3. [docker-compose](https://docs.docker.com/compose/install/)
 4. clone this repo
