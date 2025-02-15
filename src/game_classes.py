@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID
 
-from ..utils.utils import IMDB_ROOT, strip_text
+from .utils import IMDB_ROOT, strip_text
 
 
 @dataclass

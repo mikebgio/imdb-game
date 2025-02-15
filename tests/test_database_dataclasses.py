@@ -1,8 +1,8 @@
 import pytest
-import imdb_game.database.dataclasses as dc
+import src.game_classes as dc
 from datetime import datetime
 from uuid import UUID, uuid4
-from imdb_game.utils.utils import strip_text, IMDB_ROOT
+from src.utils import strip_text, IMDB_ROOT
 
 
 @pytest.fixture(scope='module')

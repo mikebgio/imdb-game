@@ -1,4 +1,4 @@
-import imdb_game.utils.utils as utils
+import src.utils as utils
 import pytest
 
 CLUE_TEXT = "The group that routinely gang rapes the protagonist references " \

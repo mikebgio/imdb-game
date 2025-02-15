@@ -10,9 +10,9 @@ the name of a movie. The earlier you guess correctly, the more points you earn.
 
 ## Technologies Used
 
-* Python 3.9
+* Python 3.12
     * Flask
-    * BeatifulSoup
+    * BeautifulSoup
     * psycopg3
 * PostgreSQL
 * Docker

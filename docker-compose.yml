@@ -1,7 +1,4 @@
-version: "3.8"
-
 services:
-
   db:
     build: db/
     container_name: "imdb_game-postgres"
@@ -23,7 +20,7 @@ services:
     ports:
       - "3000:3000"
     healthcheck:
-      test: [ "CMD", "python3", "imdb_game/healthcheck/healthcheck.py" ]
+      test: [ "CMD", "python3", "imdb_game/healthcheck.py" ]
       timeout: 30s
       interval: 10s
       retries: 10

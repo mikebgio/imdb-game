@@ -2,9 +2,9 @@
 Tests for imdb_game.gameshow module.
 """
 import pytest
-from imdb_game.gameshow.game import GameShowHost
-from imdb_game.database.dataclasses import Game, Player, Round, Clue, Movie
-from imdb_game.database.handler import DBHandler
+from src.game import GameShowHost
+from src.game_classes import Game, Player, Round, Clue, Movie
+from src.db_handler import DBHandler
 from test_tools import init_test_db
 from uuid import uuid4, UUID
 import testing.postgresql

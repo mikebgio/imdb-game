@@ -1,6 +1,6 @@
 from flask import Flask, render_template
-from imdb_game.gameshow.game import GameShowHost
-from imdb_game.database.dataclasses import Player
+from src.game import GameShowHost
+from src.game_classes import Player
 
 app = Flask(__name__, template_folder="templates")
 player = Player('mike')
