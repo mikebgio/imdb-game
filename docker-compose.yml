@@ -1,21 +1,8 @@
 services:
-  db:
-    build: db/
-    container_name: "imdb_game-postgres"
-    env_file:
-      - .env
-    restart: always
-    ports:
-      - "5555:5432"
-    healthcheck:
-      test: [ "CMD", "pg_isready", "--dbname=imdb", "--username=$POSTGRES_USER" ]
-      timeout: 45s
-      interval: 10s
-      retries: 10
-
   web:
     build: .
     container_name: "imdb_game-webserver"
+    restart: on-failure
     env_file: .env
     ports:
       - "3000:3000"
@@ -27,3 +14,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  db:
+    build: db/
+    container_name: "imdb_game-postgres"
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "--dbname=imdb", "--username=$POSTGRES_USER" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
