@@ -1,5 +1,8 @@
 services:
   web:
+    platforms:
+         - linux/amd64
+         - linux/arm64
     build: .
     container_name: "imdb_game-webserver"
     restart: on-failure
@@ -15,6 +18,9 @@ services:
       db:
         condition: service_healthy
   db:
+    platforms:
+        - linux/amd64
+        - linux/arm64
     build: db/
     container_name: "imdb_game-postgres"
     env_file:

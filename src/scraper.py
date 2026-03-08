@@ -4,10 +4,15 @@ Functions for scraping imdb.com for movie clues
 import urllib.parse
 import requests
 from bs4 import BeautifulSoup
-from database import DBHandler
-from utils import strip_text, IMDB_ROOT
-from imdb_dataclasses import Movie, Clue
+from .db_handler import DBHandler
+from .utils import strip_text, IMDB_ROOT
+from .game_classes import Movie, Clue
 import argparse
+
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) '
+                  'AppleWebKit/537.36 (KHTML, like Gecko) '
+                  'Chrome/50.0.2661.102 Safari/537.36'}
 
 
 def clean_whitespace(text: str):
@@ -24,10 +29,13 @@ def load_webpage(url: str):
     If the url is invalid, returns None.
     """
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=HEADERS)
+        print(f'Response from {url}:\n{response.status_code}')
+        if response.status_code != 200:
+            raise requests.RequestException
         return BeautifulSoup(response.text, "html.parser")
     except requests.exceptions.RequestException:
-        return None
+        raise requests.exceptions.RequestException
 
 
 def create_clues_list(soup: BeautifulSoup, categories, movie_object: Movie):
@@ -40,7 +48,7 @@ def create_clues_list(soup: BeautifulSoup, categories, movie_object: Movie):
     for user_submission in soup.find_all(class_=list_item):
         text: str = clean_whitespace(user_submission.contents[0])
         if 'id' in user_submission.parent.parent.attrs:
-            if user_submission.parent.parent.attrs['id'].lower() !=\
+            if user_submission.parent.parent.attrs['id'].lower() != \
                     'certificates':
                 tag = user_submission.parent.parent.attrs['id']
                 cat_short_name = tag.replace(pfx, '')
@@ -88,12 +96,19 @@ def get_top_250_movies():
     print('Loading the top 250 Movies to MongoDB...')
     soup = load_webpage(f'{IMDB_ROOT}/chart/top/')
     movies = []
-    for tag in soup.find_all(class_='titleColumn'):
+    for tag in soup.find_all(class_='ipc-title'):
+        link = tag.find('a').href
+        imdb_id = link.split('/')[-2]
+        title = tag.text.split('. ')[-1]
+        strip_title = strip_text(title)
+        row = (imdb_id, title, strip_title, link)
+        # movies.append(row)
         movies.append(Movie(
-            imdb_id=tag.a['href'].split('/')[-2], title=tag.a.text,
-            stripped_title=strip_text(tag.a.text),
+            imdb_id=imdb_id, title=title,
+            stripped_title=strip_title,
             release_year=int(tag.span.text.replace('(', '').replace(')', ''))
         ))
+    print(movies)
     return movies
 
 
@@ -151,7 +166,8 @@ def get_args(override: list = None):
 
 
 def main():
-    args = get_args()
+    args = get_args(['-S'])
+    print(args)
     if args.initial_setup:
         initial_setup()
 

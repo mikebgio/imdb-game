@@ -29,7 +29,7 @@ def game():
 @app.route('/movie/<movie_id>')
 def select_movie(movie_id):
     print(movie_id)
-    # movie = host.DB.get_movie_by_movie_id(movie_id)
+    movie = host.DB.get_movie_by_movie_id(movie_id)
     obj = host.web_start_round()
     print(obj)
     return render_template('movie.html',

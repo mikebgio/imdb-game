@@ -51,8 +51,7 @@ class GameShowHost:
         chosen_movie = None
         while True:
             try:
-                player_choice = input(f"Select from the following "
-                                      f"Years:\n{years_print}\n{self.PROMPT}")
+                player_choice = input(f"Select from the following Years:\n{years_print}\n{self.PROMPT}")
                 if player_choice not in years:
                     print(
                         "Invalid selection. Please choose one of the "
